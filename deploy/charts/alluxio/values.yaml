@@ -261,8 +261,6 @@ proxy:
 
 ## Alluxio FUSE ##
 
-# We support two ways to launch fuse pods - daemonset and CSI. For more information,
-# see https://docs.alluxio.io/os/user/edge/en/kubernetes/Running-Alluxio-On-Kubernetes.html#posix-api.
 fuse:
   # Whether to launch Fuse pods
   enabled: false
@@ -294,56 +292,6 @@ fuse:
   # Additional tolerations only for scheduling Alluxio Fuse
   tolerations: []
   podAnnotations: {}
-
-# Kubernetes CSI plugin
-csi:
-  enabled: false
-  controllerPlugin:
-    provisioner:
-      resources:
-        limits:
-          cpu: 100m
-          memory: 300Mi
-        requests:
-          cpu: 10m
-          memory: 20Mi
-    controller:
-      resources:
-        limits:
-          cpu: 200m
-          memory: 200Mi
-        requests:
-          cpu: 10m
-          memory: 20Mi
-    # Additional nodeSelector only for scheduling Alluxio CSI ControllerPlugin
-    nodeSelector: {}
-    # Schedule Alluxio CSI ControllerPlugin with affinity.
-    affinity: {}
-    # Additional tolerations only for scheduling Alluxio CSI ControllerPlugin
-    tolerations: []
-  nodePlugin:
-    nodeserver:
-      resources:
-        limits:
-          cpu: 200m
-          memory: 200Mi
-        requests:
-          cpu: 10m
-          memory: 20Mi
-    driverRegistrar:
-      resources:
-        limits:
-          cpu: 100m
-          memory: 100Mi
-        requests:
-          cpu: 10m
-          memory: 20Mi
-    # Additional nodeSelector only for scheduling Alluxio CSI NodePlugin
-    nodeSelector: {}
-    # Schedule Alluxio CSI NodePlugin with affinity.
-    affinity: {}
-    # Additional tolerations only for scheduling Alluxio CSI NodePlugin
-    tolerations: []
 
 ##  Metrics System ##
 
