@@ -1,0 +1,187 @@
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+{{- $name := include "alluxio.name" . }}
+{{- $fullName := include "alluxio.fullname" . }}
+{{- $chart := include "alluxio.chart" . }}
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ $fullName }}-worker
+  labels:
+    name: {{ $fullName }}-worker
+    app: {{ $name }}
+    chart: {{ $chart }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    role: alluxio-worker
+spec:
+  selector:
+    matchLabels:
+      name: {{ $fullName }}-worker
+      app: {{ $name }}
+      chart: {{ $chart }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      role: alluxio-worker
+  template:
+    metadata:
+      labels:
+        name: {{ $fullName }}-worker
+        app: {{ $name }}
+        chart: {{ $chart }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+        role: alluxio-worker
+      annotations:
+      {{- if .Values.worker.podAnnotations }}
+{{- toYaml .Values.worker.podAnnotations | nindent 8 }}
+      {{- end }}
+      {{- if and .Values.metrics.PrometheusMetricsServlet.enabled .Values.metrics.PrometheusMetricsServlet.podAnnotations }}
+{{- toYaml .Values.metrics.PrometheusMetricsServlet.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+      hostNetwork: {{ .Values.hostNetwork }}
+      dnsPolicy: {{ .Values.dnsPolicy | default (.Values.hostNetwork | ternary "ClusterFirstWithHostNet" "ClusterFirst") }}
+      {{- if .Values.hostAliases }}
+{{- include "alluxio.hostAliases" . | nindent 6 }}
+      {{- end }}
+      nodeSelector:
+      {{- if .Values.worker.nodeSelector }}
+{{ toYaml .Values.worker.nodeSelector | trim | indent 8  }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+{{ toYaml .Values.nodeSelector | trim | indent 8  }}
+      {{- end }}
+      affinity:
+      {{- if .Values.worker.affinity }}
+{{- toYaml .Values.worker.affinity | indent 8 }}
+      {{- end }}
+      tolerations:
+      {{- if .Values.worker.tolerations }}
+{{ toYaml .Values.worker.tolerations | trim | indent 8  }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+{{ toYaml .Values.tolerations | trim | indent 8  }}
+      {{- end }}
+      securityContext:
+        runAsUser: {{ .Values.user }}
+        runAsGroup: {{ .Values.group }}
+        fsGroup: {{ .Values.fsGroup }}
+      {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- end }}
+      {{- if .Values.imagePullSecrets }}
+{{ include "alluxio.imagePullSecrets" . | indent 6 }}
+      {{- end}}
+      initContainers:
+      - name: wait-master
+        image: {{ .Values.image }}:{{ .Values.imageTag }}
+        command: [ "/bin/sh", "-c" ]
+        args:
+          - until nslookup {{ $fullName }}-master-0;
+            do sleep 2;
+            done
+      containers:
+        - name: alluxio-worker
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          {{- if .Values.worker.resources  }}
+{{ include "alluxio.resources" .Values.worker.resources | indent 10 }}
+          {{- end }}
+          command: ["tini", "--", "/entrypoint.sh"]
+          args:
+            - worker-only
+            - --no-format
+          env:
+          - name: ALLUXIO_WORKER_HOSTNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: status.hostIP
+          {{- if not .Values.hostNetwork }}
+          - name: ALLUXIO_WORKER_CONTAINER_HOSTNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          {{- end }}
+          {{- range $key, $value := .Values.worker.env }}
+          - name: "{{ $key }}"
+            value: "{{ $value }}"
+          {{- end }}
+          readinessProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: {{ .Values.worker.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.worker.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.worker.readinessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.worker.readinessProbe.failureThreshold }}
+            successThreshold: {{ .Values.worker.readinessProbe.successThreshold }}
+          livenessProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: {{ .Values.worker.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.worker.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.worker.livenessProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.worker.livenessProbe.failureThreshold }}
+          startupProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: {{ .Values.worker.startupProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.worker.startupProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.worker.startupProbe.timeoutSeconds }}
+            failureThreshold: {{ .Values.worker.startupProbe.failureThreshold }}
+          ports:
+          - containerPort: {{ .Values.worker.ports.rpc }}
+            name: rpc
+          - containerPort: {{ .Values.worker.ports.web }}
+            name: web
+          volumeMounts:
+            - name: {{ $fullName }}-alluxio-conf
+              mountPath: /opt/alluxio/conf
+            {{- if .Values.metastore.enabled }}
+            - name: alluxio-metastore
+              mountPath: /mnt/alluxio-metastore
+            {{- end }}
+            {{- if .Values.secrets }}
+{{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.worker "readOnly" true) | indent 12 }}
+            {{- end }}
+            {{- if .Values.configMaps }}
+{{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.configMaps.worker "readOnly" true) | indent 12 }}
+            {{- end }}
+            {{- if .Values.pvcMounts }}
+{{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.pvcMounts.worker "readOnly" false) | indent 12 }}
+            {{- end }}
+            {{- if .Values.tieredstore }}
+{{- include "alluxio.worker.tieredstoreVolumeMounts" . }}
+            {{- end }}
+      restartPolicy: Always
+      volumes:
+        - name: {{ $fullName }}-alluxio-conf
+          configMap:
+            name: {{ $fullName }}-alluxio-conf
+        {{- if .Values.metastore.enabled }}
+        - name: alluxio-metastore
+          persistentVolumeClaim:
+            claimName: alluxio-metastore
+        {{- end }}
+        {{- if .Values.secrets }}
+{{- include "alluxio.secretVolumes" .Values.secrets.worker | indent 8 }}
+        {{- end }}
+        {{- if .Values.configMaps }}
+{{- include "alluxio.configMapVolumes" .Values.configMaps.worker | indent 8 }}
+        {{- end }}
+        {{- if .Values.pvcMounts }}
+{{- include "alluxio.persistentVolumes" .Values.pvcMounts.worker | indent 8 }}
+        {{- end }}
+        {{- if .Values.tieredstore }}
+{{- include "alluxio.worker.tieredstoreVolumes" . }}
+        {{- end}}

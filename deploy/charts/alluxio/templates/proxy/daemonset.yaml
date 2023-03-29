@@ -1,0 +1,134 @@
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+{{- if .Values.proxy.enabled }}
+{{- $name := include "alluxio.name" . }}
+{{- $fullName := include "alluxio.fullname" . }}
+{{- $chart := include "alluxio.chart" . }}
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: {{ $fullName }}-proxy
+  labels:
+    name: {{ $fullName }}-proxy
+    app: {{ $name }}
+    chart: {{ $chart }}
+    release: {{ .Release.Name }}
+    heritage: {{ .Release.Service }}
+    role: alluxio-proxy
+spec:
+  selector:
+    matchLabels:
+      name: {{ $fullName }}-proxy
+      app: {{ $name }}
+      chart: {{ $chart }}
+      release: {{ .Release.Name }}
+      heritage: {{ .Release.Service }}
+      role: alluxio-proxy
+  template:
+    metadata:
+      labels:
+        name: {{ $fullName }}-proxy
+        app: {{ $name }}
+        chart: {{ $chart }}
+        release: {{ .Release.Name }}
+        heritage: {{ .Release.Service }}
+        role: alluxio-proxy
+      annotations:
+      {{- if .Values.proxy.podAnnotations }}
+{{- toYaml .Values.worker.podAnnotations | nindent 8 }}
+      {{- end }}
+      {{- if and .Values.metrics.PrometheusMetricsServlet.enabled .Values.metrics.PrometheusMetricsServlet.podAnnotations }}
+{{- toYaml .Values.metrics.PrometheusMetricsServlet.podAnnotations | nindent 8 }}
+      {{- end }}
+    spec:
+      hostNetwork: {{ .Values.hostNetwork }}
+      dnsPolicy: {{ .Values.dnsPolicy | default (.Values.hostNetwork | ternary "ClusterFirstWithHostNet" "ClusterFirst") }}
+      {{- if .Values.hostAliases }}
+{{- include "alluxio.hostAliases" . | nindent 6 }}
+      {{- end }}
+      nodeSelector:
+      {{- if .Values.proxy.nodeSelector }}
+{{ toYaml .Values.proxy.nodeSelector | trim | indent 8  }}
+      {{- end }}
+      {{- if .Values.nodeSelector }}
+{{ toYaml .Values.nodeSelector | trim | indent 8  }}
+      {{- end }}
+      affinity:
+      {{- if .Values.proxy.affinity }}
+{{- toYaml .Values.proxy.affinity | indent 8 }}
+      {{- end }}
+      tolerations:
+      {{- if .Values.proxy.tolerations }}
+{{ toYaml .Values.proxy.tolerations | trim | indent 8  }}
+      {{- end }}
+      {{- if .Values.tolerations }}
+{{ toYaml .Values.tolerations | trim | indent 8  }}
+      {{- end }}
+      securityContext:
+        runAsUser: {{ .Values.user }}
+        runAsGroup: {{ .Values.group }}
+        fsGroup: {{ .Values.fsGroup }}
+      {{- if .Values.serviceAccountName }}
+      serviceAccountName: {{ .Values.serviceAccountName }}
+      {{- end }}
+      {{- if .Values.imagePullSecrets }}
+{{ include "alluxio.imagePullSecrets" . | indent 6 }}
+      {{- end}}
+      containers:
+        - name: alluxio-proxy
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          {{- if .Values.proxy.resources  }}
+{{ include "alluxio.resources" .Values.proxy.resources | indent 10 }}
+          {{- end }}
+          command: ["/entrypoint.sh"]
+          args:
+            - proxy
+          env:
+            - name: ALLUXIO_CLIENT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            {{- range $key, $value := .Values.proxy.env }}
+            - name: "{{ $key }}"
+              value: "{{ $value }}"
+            {{- end }}
+          ports:
+            - containerPort: {{ .Values.proxy.ports.web }}
+              name: web
+          volumeMounts:
+            - name: {{ $fullName }}-alluxio-conf
+              mountPath: /opt/alluxio/conf
+            {{- if .Values.secrets }}
+{{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.proxy "readOnly" true) | indent 12 }}
+            {{- end }}
+            {{- if .Values.configMaps }}
+{{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.configMaps.proxy "readOnly" true) | indent 12 }}
+            {{- end }}
+            {{- if .Values.pvcMounts }}
+{{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.pvcMounts.proxy "readOnly" false) | indent 12 }}
+            {{- end }}
+      volumes:
+        - name: {{ $fullName }}-alluxio-conf
+          configMap:
+            name: {{ $fullName }}-alluxio-conf
+              {{- if .Values.secrets }}
+      {{- include "alluxio.secretVolumes" .Values.secrets.proxy | indent 8 }}
+              {{- end }}
+              {{- if .Values.configMaps }}
+      {{- include "alluxio.configMapVolumes" .Values.configMaps.proxy | indent 8 }}
+              {{- end }}
+              {{- if .Values.pvcMounts }}
+      {{- include "alluxio.persistentVolumes" .Values.pvcMounts.proxy | indent 8 }}
+              {{- end }}
+{{- end }}
