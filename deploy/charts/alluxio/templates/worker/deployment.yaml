@@ -121,13 +121,11 @@ spec:
           - name: ALLUXIO_WORKER_HOSTNAME
             valueFrom:
               fieldRef:
+                {{- if .Values.hostNetwork }}
                 fieldPath: status.hostIP
-          {{- if not .Values.hostNetwork }}
-          - name: ALLUXIO_WORKER_CONTAINER_HOSTNAME
-            valueFrom:
-              fieldRef:
+                {{- else }}
                 fieldPath: status.podIP
-          {{- end }}
+                {{- end }}
           {{- range $key, $value := .Values.worker.env }}
           - name: "{{ $key }}"
             value: "{{ $value }}"
