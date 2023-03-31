@@ -78,17 +78,17 @@ jvmOptions:
 
 ## Mounts ##
 
-# Mount Persistent Volumes, ConfigMaps, and Secrets into different Alluxio components.
+# Mount Persistent Volume Claims, ConfigMaps, and Secrets into different Alluxio components.
 # Format:
 # [pvcMounts | configMaps | secrets]:
 #  master: # Mounted into Alluxio master container(s)
-#    <name of PV/ConfigMap/Secret>: <mountPath>
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
 #  worker: # Mounted into Alluxio worker container(s)
-#    <name of PV/ConfigMap/Secret>: <mountPath>
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
 #  fuse: # Mounted into Alluxio fuse container(s)
-#    <name of PV/ConfigMap/Secret>: <mountPath>
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
 #  proxy: # Mounted into Alluxio proxy container(s)
-#    <name of PV/ConfigMap/Secret>: <mountPath>
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
 pvcMounts:
 
 configMaps:
@@ -162,6 +162,11 @@ journal:
 ## Alluxio Worker ##
 
 worker:
+  # Number of workers to launch
+  count: 1
+  # Whether to limit at most one Alluxio worker per k8s node.
+  # Set to true if each k8s node has only one directory for Alluxio worker storage.
+  limitOneWorkerPerNode: true
   # Extra environment variables for the Alluxio worker pods. Format:
   # env:
   #   <key1>: <value1>
@@ -205,17 +210,18 @@ worker:
   tolerations: []
   podAnnotations: {}
 
-# Tiered Storage of Alluxio workers. Examples can be found at
-# https://docs.alluxio.io/os/user/edge/en/kubernetes/Running-Alluxio-On-Kubernetes.html#deploy
-# under section "Example: Alluxio Storage Management".
-tieredstore:
-  levels:
-  - level: 0
-    alias: MEM
-    mediumtype: MEM
-    path: /dev/shm
+# Pagestore volume for Alluxio workers to store cached data.
+pagestore:
+    # Type of the volume for Alluxio worker page store. Can be persistentVolumeClaim, hostPath, or emptyDir.
     type: emptyDir
+    # Size of each worker's storage space
     quota: 1Gi
+    # Required for volume type of hostPath, ignored otherwise
+    hostPath: /mnt/alluxio/pagestore
+    # Required for volume type of persistentVolumeClaim, ignored otherwise
+    storageClass: "standard"
+    # Requireid for volume type of emptyDir, ignored otherwise
+    memoryBacked: false
 
 # Metastore configures ROCKS DB to store metadata on workers instead of using heap.
 # Persistent Volume are required for metastore. Only ReadWriteOnce is supported.

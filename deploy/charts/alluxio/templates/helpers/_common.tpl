@@ -102,7 +102,7 @@ resources:
 {{- end }}
 {{- end -}}
 
-{{- define "alluxio.persistentVolumes" -}}
+{{- define "alluxio.persistentVolumeClaims" -}}
 {{- range $key, $val := . }}
 - name: {{ $key }}-volume
   persistentVolumeClaim:
@@ -110,86 +110,10 @@ resources:
 {{- end }}
 {{- end -}}
 
-{{- define "alluxio.worker.tieredstoreVolumeMounts" -}}
-  {{- if .Values.tieredstore.levels }}
-    {{- range .Values.tieredstore.levels }}
-      {{- /* The mediumtype can have multiple parts like MEM,SSD */}}
-      {{- if .mediumtype }}
-        {{- /* Mount each part */}}
-        {{- if contains "," .mediumtype }}
-          {{- $type := .type }}
-          {{- $path := .path }}
-          {{- $parts := splitList "," .mediumtype }}
-          {{- range $i, $val := $parts }}
-            {{- /* Example: For path="/tmp/mem,/tmp/ssd", mountPath resolves to /tmp/mem and /tmp/ssd */}}
-            - mountPath: {{ index ($path | splitList ",") $i }}
-              name: {{ $val | lower }}-{{ $i }}
-          {{- end}}
-        {{- /* The mediumtype is a single value. */}}
-        {{- else}}
-            - mountPath: {{ .path }}
-              name: {{ .mediumtype | replace "," "-" | lower }}
-        {{- end}}
-      {{- end}}
-    {{- end}}
-  {{- end}}
+{{- define "alluxio.getVolumeName" -}}
+{{ printf "%v-%v-volume" .prefix .component }}
 {{- end -}}
 
-{{- define "alluxio.worker.tieredstoreVolumes" -}}
-  {{- if .Values.tieredstore.levels }}
-    {{- range .Values.tieredstore.levels }}
-      {{- if .mediumtype }}
-        {{- /* The mediumtype can have multiple parts like MEM,SSD */}}
-        {{- if contains "," .mediumtype }}
-          {{- $parts := splitList "," .mediumtype }}
-          {{- $type := .type }}
-          {{- $path := .path }}
-          {{- $volumeName := .name }}
-          {{- /* A volume will be generated for each part */}}
-          {{- range $i, $val := $parts }}
-            {{- /* Example: For mediumtype="MEM,SSD", mediumName resolves to mem-0 and ssd-1 */}}
-            {{- $mediumName := printf "%v-%v" (lower $val) $i }}
-            {{- if eq $type "hostPath"}}
-        - hostPath:
-            path: {{ index ($path | splitList ",") $i }}
-            type: DirectoryOrCreate
-          name: {{ $mediumName }}
-            {{- else if eq $type "persistentVolumeClaim" }}
-        - name: {{ $mediumName }}
-          persistentVolumeClaim:
-            {{- /* Example: For volumeName="/tmp/mem,/tmp/ssd", claimName resolves to /tmp/mem and /tmp/ssd */}}
-            claimName: {{ index ($volumeName | splitList ",") $i }}
-            {{- else }}
-        - name: {{ $mediumName }}
-          emptyDir:
-            medium: "Memory"
-              {{- if .quota }}
-            sizeLimit: {{ .quota }}
-              {{- end}}
-            {{- end}}
-          {{- end}}
-        {{- /* The mediumtype is a single value like MEM. */}}
-        {{- else}}
-          {{- $mediumName := .mediumtype | lower }}
-          {{- if eq .type "hostPath"}}
-        - hostPath:
-            path: {{ .path }}
-            type: DirectoryOrCreate
-          name: {{ $mediumName }}
-          {{- else if eq .type "persistentVolumeClaim" }}
-        - name: {{ $mediumName }}
-          persistentVolumeClaim:
-            claimName: {{ .name }}
-          {{- else }}
-        - name: {{ $mediumName }}
-          emptyDir:
-            medium: "Memory"
-            {{- if .quota }}
-            sizeLimit: {{ .quota }}
-            {{- end}}
-          {{- end}}
-        {{- end}}
-      {{- end}}
-    {{- end}}
-  {{- end}}
+{{- define "alluxio.getPvcName" -}}
+{{ printf "%v-%v-pvc" .prefix .component }}
 {{- end -}}

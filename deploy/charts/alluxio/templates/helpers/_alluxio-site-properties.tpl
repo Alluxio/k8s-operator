@@ -1,11 +1,16 @@
 {{- define "alluxio.site.properties" -}}
+# Enable Dora
+alluxio.dora.client.read.location.policy.enabled=true
+alluxio.user.short.circuit.enabled=false
+alluxio.master.worker.register.lease.enabled=false
+
 # Common properties
 {{- range $key, $val := .Values.properties }}
-{{- printf "%v=%v" $key $val }}
+{{ printf "%v=%v" $key $val }}
 {{- end }}
 
-# Master address if single master
 {{- if eq (int .Values.master.count) 1 }}
+# Master address for single master
 alluxio.master.hostname={{ include "alluxio.fullname" . }}-master-0
 {{- end }}
 
@@ -15,26 +20,15 @@ alluxio.master.hostname={{ include "alluxio.fullname" . }}-master-0
 {{- if gt (int .Values.master.count) 1 }}
 {{- $embeddedJournalAddresses := ""}}
 {{- range $i := until (int .Values.master.count) }}
-  {{ $embeddedJournalAddresses = printf "%v,%v-master-%v:19200" $embeddedJournalAddresses (include "alluxio.fullname" .) $i }}
+  {{- $embeddedJournalAddresses = printf "%v,%v-master-%v:19200" $embeddedJournalAddresses (include "alluxio.fullname" $) $i }}
 {{- end }}
 {{ printf "alluxio.master.embedded.journal.addresses=%v" $embeddedJournalAddresses }}
 {{- end }}
 
-# Tiered Storage
-{{- if .Values.tieredstore }}
-{{ printf "alluxio.worker.tieredstore.levels=%v" (len .Values.tieredstore.levels) }}
-{{- range .Values.tieredstore.levels }}
-{{- $tierName := printf "alluxio.worker.tieredstore.level%v" .level }}
-{{- if .alias }}
-{{ printf "%v.alias=%v" $tierName .alias -}}
-{{- end }}
-{{ printf "%v.dirs.mediumtype=%v" $tierName .mediumtype }}
-{{- if .path }}
-{{ printf "%v.dirs.path=%v" $tierName .path }}
-{{- end}}
-{{- if .quota }}
-{{ printf "%v.dirs.quota=%v" $tierName .quota }}
-{{- end }}
-{{- end }}
-{{- end }}
+# Page Storage
+alluxio.worker.block.store.type=PAGE
+alluxio.worker.page.store.type=LOCAL
+alluxio.worker.page.store.dirs=/mnt/alluxio/pagestore
+{{ printf "alluxio.worker.page.store.sizes=%v" .Values.pagestore.quota }}
+
 {{- end -}}

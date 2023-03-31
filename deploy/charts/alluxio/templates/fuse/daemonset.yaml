@@ -163,6 +163,6 @@ spec:
 {{- include "alluxio.configMapVolumes" .Values.configMaps.fuse | indent 8 }}
         {{- end }}
         {{- if .Values.pvcMounts }}
-{{- include "alluxio.persistentVolumes" .Values.pvcMounts.fuse | indent 8 }}
+{{- include "alluxio.persistentVolumeClaims" .Values.pvcMounts.fuse | indent 8 }}
         {{- end }}
 {{- end }}

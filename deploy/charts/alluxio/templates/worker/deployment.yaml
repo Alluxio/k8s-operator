@@ -12,9 +12,12 @@
 {{- $name := include "alluxio.name" . }}
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
+{{- $workerRoleName := "alluxio-worker"}}
+{{ $metastoreVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "metastore") }}
+{{ $pagestoreVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "pagestore") }}
 
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: {{ $fullName }}-worker
   labels:
@@ -23,8 +26,9 @@ metadata:
     chart: {{ $chart }}
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
-    role: alluxio-worker
+    role: {{ $workerRoleName }}
 spec:
+  replicas: {{ .Values.worker.count }}
   selector:
     matchLabels:
       name: {{ $fullName }}-worker
@@ -32,7 +36,7 @@ spec:
       chart: {{ $chart }}
       release: {{ .Release.Name }}
       heritage: {{ .Release.Service }}
-      role: alluxio-worker
+      role: {{ $workerRoleName }}
   template:
     metadata:
       labels:
@@ -41,7 +45,7 @@ spec:
         chart: {{ $chart }}
         release: {{ .Release.Name }}
         heritage: {{ .Release.Service }}
-        role: alluxio-worker
+        role: {{ $workerRoleName }}
       annotations:
       {{- if .Values.worker.podAnnotations }}
 {{- toYaml .Values.worker.podAnnotations | nindent 8 }}
@@ -63,8 +67,19 @@ spec:
 {{ toYaml .Values.nodeSelector | trim | indent 8  }}
       {{- end }}
       affinity:
+      {{- if .Values.worker.limitOneWorkerPerNode }}
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "role"
+                    operator: In
+                    values:
+                      - {{ $workerRoleName }}
+              topologyKey: "kubernetes.io/hostname"
+      {{- end }}
       {{- if .Values.worker.affinity }}
-{{- toYaml .Values.worker.affinity | indent 8 }}
+{{- toYaml .Values.worker.affinity | nindent 8 }}
       {{- end }}
       tolerations:
       {{- if .Values.worker.tolerations }}
@@ -148,8 +163,8 @@ spec:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
             {{- if .Values.metastore.enabled }}
-            - name: alluxio-metastore
-              mountPath: /mnt/alluxio-metastore
+            - name: {{ $metastoreVolumeName }}
+              mountPath: {{ include "alluxio.mount.path" "/metastore"}}
             {{- end }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.worker "readOnly" true) | indent 12 }}
@@ -160,8 +175,9 @@ spec:
             {{- if .Values.pvcMounts }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.pvcMounts.worker "readOnly" false) | indent 12 }}
             {{- end }}
-            {{- if .Values.tieredstore }}
-{{- include "alluxio.worker.tieredstoreVolumeMounts" . }}
+            {{- if .Values.pagestore }}
+            - mountPath: {{ include "alluxio.mount.path" "/pagestore"}}
+              name: {{ $pagestoreVolumeName }}
             {{- end }}
       restartPolicy: Always
       volumes:
@@ -169,9 +185,9 @@ spec:
           configMap:
             name: {{ $fullName }}-alluxio-conf
         {{- if .Values.metastore.enabled }}
-        - name: alluxio-metastore
+        - name: {{ $metastoreVolumeName }}
           persistentVolumeClaim:
-            claimName: alluxio-metastore
+            claimName: {{ include "alluxio.getPvcName" (dict "prefix" $fullName "component" "metastore") }}
         {{- end }}
         {{- if .Values.secrets }}
 {{- include "alluxio.secretVolumes" .Values.secrets.worker | indent 8 }}
@@ -180,8 +196,24 @@ spec:
 {{- include "alluxio.configMapVolumes" .Values.configMaps.worker | indent 8 }}
         {{- end }}
         {{- if .Values.pvcMounts }}
-{{- include "alluxio.persistentVolumes" .Values.pvcMounts.worker | indent 8 }}
+{{- include "alluxio.persistentVolumeClaims" .Values.pvcMounts.worker | indent 8 }}
         {{- end }}
-        {{- if .Values.tieredstore }}
-{{- include "alluxio.worker.tieredstoreVolumes" . }}
-        {{- end}}
+        {{- if .Values.pagestore }}
+        {{- if eq .Values.pagestore.type "hostPath"}}
+        - name: {{ $pagestoreVolumeName }}
+          hostPath:
+            path: {{ .Values.pagestore.hostPath }}
+            type: Directory
+        {{- else if eq .Values.pagestore.type "persistentVolumeClaim" }}
+        - name: {{ $pagestoreVolumeName }}
+          persistentVolumeClaim:
+            claimName: {{ include "alluxio.getPvcName" (dict "prefix" $fullName "component" "pagestore") }}
+        {{- else if eq .Values.pagestore.type "emptyDir" }}
+        - name: {{ $pagestoreVolumeName }}
+          emptyDir:
+            sizeLimit: {{ .Values.pagestore.quota }}
+            {{- if .Values.pagestore.memoryBacked }}
+            medium: "Memory"
+            {{- end }}
+        {{- end }}
+        {{- end }}

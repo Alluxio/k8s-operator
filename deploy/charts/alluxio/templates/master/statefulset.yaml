@@ -15,6 +15,7 @@
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
 {{- $isHa := gt (int .Values.master.count) 1 }}
+{{- $alluxioJournalVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "journal") }}
 {{- $alluxioJournalDir := include "alluxio.mount.path" "/journal"}}
 
 apiVersion: apps/v1
@@ -93,7 +94,7 @@ spec:
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ["alluxio","formatJournal"]
         volumeMounts:
-          - name: alluxio-journal
+          - name: {{ $alluxioJournalVolumeName }}
             mountPath: {{ $alluxioJournalDir }}
           - name: {{ $fullName }}-alluxio-conf
             mountPath: /opt/alluxio/conf
@@ -156,7 +157,7 @@ spec:
           volumeMounts:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
-            - name: alluxio-journal
+            - name: {{ $alluxioJournalVolumeName }}
               mountPath: {{ $alluxioJournalDir }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.master "readOnly" true) | indent 12 }}
@@ -179,11 +180,11 @@ spec:
 {{- include "alluxio.configMapVolumes" .Values.configMaps.master | indent 8 }}
         {{- end }}
         {{- if .Values.pvcMounts }}
-{{- include "alluxio.persistentVolumes" .Values.pvcMounts.master | indent 8 }}
+{{- include "alluxio.persistentVolumeClaims" .Values.pvcMounts.master | indent 8 }}
         {{- end }}
   volumeClaimTemplates:
     - metadata:
-        name: alluxio-journal
+        name: {{ $alluxioJournalVolumeName }}
       spec:
         storageClassName: {{ .Values.journal.storageClass }}
         accessModes:
