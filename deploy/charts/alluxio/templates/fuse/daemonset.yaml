@@ -14,8 +14,8 @@
 {{- $name := include "alluxio.name" . }}
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
-{{- $hostMountPath := include "alluxio.mount.path" "" }}
-{{- $alluxioFuseMountPoint := include "alluxio.mount.path" "/fuse"}}
+{{- $hostMountPath := include "alluxio.mount.basePath" "" }}
+{{- $alluxioFuseMountPoint := include "alluxio.mount.basePath" "/fuse"}}
 
 apiVersion: apps/v1
 kind: DaemonSet
@@ -103,10 +103,7 @@ spec:
           command: ["/entrypoint.sh"]
           args:
             - fuse
-            {{- if not (get .Values.properties "alluxio.dora.client.ufs.root") }}
-              {{- fail "alluxio.dora.client.ufs.root must be set for AlluxioFuse to work." }}
-            {{- end }}
-            - {{ get .Values.properties "alluxio.dora.client.ufs.root" }}
+            - {{ required "The path of the dataset must be set." .Values.dataset.path }}
             - {{ $alluxioFuseMountPoint }}
             {{- range .Values.fuse.mountOptions }}
             - -o {{ . }}

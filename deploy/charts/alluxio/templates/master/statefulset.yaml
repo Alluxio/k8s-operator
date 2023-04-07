@@ -16,7 +16,7 @@
 {{- $chart := include "alluxio.chart" . }}
 {{- $isHa := gt (int .Values.master.count) 1 }}
 {{- $alluxioJournalVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "journal") }}
-{{- $alluxioJournalDir := include "alluxio.mount.path" "/journal"}}
+{{- $alluxioJournalDir := include "alluxio.mount.basePath" "/journal"}}
 
 apiVersion: apps/v1
 kind: StatefulSet

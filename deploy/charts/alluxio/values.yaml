@@ -96,6 +96,18 @@ configMaps:
 secrets:
 
 
+## Dataset ##
+
+dataset:
+  # The path of the dataset. For example, s3://my-bucket/dataset
+  path:
+  # Any credentials for Alluxio to access the dataset. For example,
+  # credentials:
+  #   aws.accessKeyId: XXXXX
+  #   aws.secretKey: xxxx
+  credentials:
+
+
 ## Alluxio Master ##
 
 master:

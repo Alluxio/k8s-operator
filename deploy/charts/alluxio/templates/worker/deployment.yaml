@@ -162,7 +162,7 @@ spec:
               mountPath: /opt/alluxio/conf
             {{- if .Values.metastore.enabled }}
             - name: {{ $metastoreVolumeName }}
-              mountPath: {{ include "alluxio.mount.path" "/metastore"}}
+              mountPath: {{ include "alluxio.mount.basePath" "/metastore"}}
             {{- end }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.worker "readOnly" true) | indent 12 }}
@@ -174,7 +174,7 @@ spec:
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.pvcMounts.worker "readOnly" false) | indent 12 }}
             {{- end }}
             {{- if .Values.pagestore }}
-            - mountPath: {{ include "alluxio.mount.path" "/pagestore"}}
+            - mountPath: {{ include "alluxio.mount.basePath" "/pagestore"}}
               name: {{ $pagestoreVolumeName }}
             {{- end }}
       restartPolicy: Always
