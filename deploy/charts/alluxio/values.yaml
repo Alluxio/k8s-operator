@@ -316,14 +316,14 @@ fuse:
 # Settings for Alluxio metrics
 metrics:
   # Enable ConsoleSink by class name
-  ConsoleSink:
+  consoleSink:
     enabled: false
     # Polling period for ConsoleSink
     period: 10
     # Unit of poll period
     unit: seconds
   # Enable CsvSink by class name
-  CsvSink:
+  csvSink:
     enabled: false
     # Polling period for CsvSink
     period: 1
@@ -332,15 +332,15 @@ metrics:
     # Polling directory for CsvSink, ensure this directory exists!
     directory: /tmp/alluxio-metrics
   # Enable JmxSink by class name
-  JmxSink:
+  jmxSink:
     enabled: false
     # Jmx domain
     domain: org.alluxio
   # Enable GraphiteSink by class name
-  GraphiteSink:
+  graphiteSink:
     enabled: false
     # Hostname of Graphite server
-    host: NONE
+    hostname: NONE
     # Port of Graphite server
     port: NONE
     # Poll period
@@ -350,7 +350,7 @@ metrics:
     # Prefix to prepend to metric name
     prefix: ""
   # Enable Slf4jSink by class name
-  Slf4jSink:
+  slf4jSink:
     enabled: false
     # Poll period
     period: 10
@@ -361,7 +361,7 @@ metrics:
     # Contains all metrics
     filterRegex: null
   # Enable PrometheusMetricsServlet by class name
-  PrometheusMetricsServlet:
+  prometheusMetricsServlet:
     enabled: false
     # Pod annotations for Prometheus. Example:
     # podAnnotations:
