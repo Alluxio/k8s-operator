@@ -1,0 +1,372 @@
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+# The following value should not be modified in the usual case.
+nameOverride: alluxio
+
+
+## Common ##
+
+# Docker Image
+image: alluxio/alluxio
+imageTag: 291-gamma
+imagePullPolicy: IfNotPresent
+
+# Image Pull Secrets
+# A list of name of the secrets for the pods to pull images if needed.
+# The secrets need to be created externally from this Helm chart. Format:
+# imagePullSecrets:
+#   - ecr
+#   - dev
+imagePullSecrets:
+
+# Security Context
+user: 1000
+group: 1000
+fsGroup: 1000
+
+# Whether using hostNetwork for all Alluxio pods
+hostNetwork: false
+
+# If hostNetwork is false, dnsPolicy defaults to ClusterFirst.
+# If hostNetwork is true, dnsPolicy defaults to ClusterFirstWithHostNet.
+# Use this property to override the default value.
+dnsPolicy:
+
+# Service Account
+# If not specified, 'default' ServiceAccount of the namespace shall be used for all Alluxio pods
+serviceAccountName:
+
+# HostAliases is an optional list of hostnames and IPs that will be injected into all pods,
+# for providing the mapping between hostnames and IPs of services not in the K8s cluster, like HDFS.
+# Example:
+# hostAliases:
+#   - ip: "192.168.0.1"
+#     hostnames:
+#       - "example1.com"
+#       - "example2.com"
+hostAliases:
+
+# Use labels to run Alluxio on a subset of the K8s nodes. Format:
+# nodeSelector:
+#   <lable key1>: <label value1>
+#   <label key2>: <label value2>
+nodeSelector:
+
+# A list of K8s Node taints to allow scheduling on. Format:
+# tolerations:
+#   - key: <key>
+#     operator: ["Equal" | "Exists"]
+#     value: <value>
+#     effect: ["NoSchedule" | "NoExecute" | "PreferNoSchedule"]
+tolerations:
+
+# Site properties for all Alluxio components
+properties:
+
+# JVM options common to all Alluxio components
+jvmOptions:
+
+
+## Mounts ##
+
+# Mount Persistent Volume Claims, ConfigMaps, and Secrets into different Alluxio components.
+# Format:
+# [pvcMounts | configMaps | secrets]:
+#  master: # Mounted into Alluxio master container(s)
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#  worker: # Mounted into Alluxio worker container(s)
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#  fuse: # Mounted into Alluxio fuse container(s)
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#  proxy: # Mounted into Alluxio proxy container(s)
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
+pvcMounts:
+
+configMaps:
+
+secrets:
+
+
+## Dataset ##
+
+dataset:
+  # The path of the dataset. For example, s3://my-bucket/dataset
+  path:
+  # Any credentials for Alluxio to access the dataset. For example,
+  # credentials:
+  #   aws.accessKeyId: XXXXX
+  #   aws.secretKey: xxxx
+  credentials:
+
+
+## Alluxio Master ##
+
+master:
+  # Whether to launch Alluxio master pods
+  enabled: true
+  # Number of master deployed. For high-availability mode set this to an odd number > 1
+  count: 1
+  # Extra environment variables for Alluxio master pods. Format:
+  # env:
+  #   <key1>: <value1>
+  #   <key2>: <value2>
+  env:
+  # A list of JVM options specific to Alluxio masters
+  jvmOptions:
+  # Resources allocated to the containers running Alluxio masters
+  resources:
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+  ports:
+    embedded: 19200
+    rpc: 19998
+    web: 19999
+  # Probes that do health checks on containers
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+  livenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 2
+  startupProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 2
+  # Additional nodeSelector only for scheduling Alluxio masters
+  nodeSelector: {}
+  # Schedule Alluxio masters with affinity.
+  affinity: {}
+  # Additional tolerations only for scheduling Alluxio masters
+  tolerations: []
+  podAnnotations: {}
+
+# Journal system of Alluxio master.
+# Only Embedded journal is supported at the moment.
+# Persistent Volume is required for storing journal.
+journal:
+  # Size of requested storage capacity for the persistentVolumeClaim
+  size: 1Gi
+  # StorageClass of the Persistent Volume for journal
+  storageClass: "standard"
+  # Whether to format the journal directory
+  runFormat: false
+
+
+## Alluxio Worker ##
+
+worker:
+  # Number of workers to launch
+  count: 1
+  # Whether to limit at most one Alluxio worker per k8s node.
+  # Set to true if each k8s node has only one directory for Alluxio worker storage.
+  limitOneWorkerPerNode: true
+  # Extra environment variables for the Alluxio worker pods. Format:
+  # env:
+  #   <key1>: <value1>
+  #   <key2>: <value2>
+  env:
+  # A list of JVM options specific to Alluxio workers
+  jvmOptions:
+  # Resources allocated to the containers running Alluxio workers
+  resources:
+    limits:
+      cpu: "4"
+      memory: "4Gi"
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+  ports:
+    rpc: 29999
+    web: 30000
+  # Probes that do health checks on containers
+  readinessProbe:
+    initialDelaySeconds: 10
+    periodSeconds: 10
+    timeoutSeconds: 1
+    failureThreshold: 3
+    successThreshold: 1
+  livenessProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 2
+  startupProbe:
+    initialDelaySeconds: 15
+    periodSeconds: 30
+    timeoutSeconds: 5
+    failureThreshold: 2
+  # Additional nodeSelector only for scheduling Alluxio workers
+  nodeSelector: {}
+  # Schedule Alluxio workers with affinity.
+  affinity: {}
+  # Additional tolerations only for scheduling Alluxio workers
+  tolerations: []
+  podAnnotations: {}
+
+# Pagestore volume for Alluxio workers to store cached data.
+pagestore:
+    # Type of the volume for Alluxio worker page store. Can be persistentVolumeClaim, hostPath, or emptyDir.
+    type: emptyDir
+    # Size of each worker's storage space
+    quota: 1Gi
+    # Required for volume type of hostPath, ignored otherwise
+    hostPath: /mnt/alluxio/pagestore
+    # Required for volume type of persistentVolumeClaim, ignored otherwise
+    storageClass: "standard"
+    # Requireid for volume type of emptyDir, ignored otherwise
+    memoryBacked: false
+
+# Metastore configures ROCKS DB to store metadata on workers instead of using heap.
+# Persistent Volume are required for metastore. Only ReadWriteOnce is supported.
+metastore:
+  # Whether metastore on worker is enabled.
+  enabled: false
+  # Size of requested storage capacity for the persistentVolumeClaim for metastore.
+  size: 1Gi
+  # StorageClass of the Persistent Volume for metastore
+  storageClass: "standard"
+
+
+## Alluxio Proxy ##
+
+proxy:
+  # Whether to launch Alluxio proxy pods
+  enabled: false
+  # Extra environment variables for the Alluxio proxy pods. Format:
+  # env:
+  #   <key1>: <value1>
+  #   <key2>: <value2>
+  env:
+  # A list of JVM options specific to Alluxio proxy
+  jvmOptions:
+  # Resources allocated to the containers running Alluxio proxies
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "1Gi"
+    limits:
+      cpu: "4"
+      memory: "4Gi"
+  ports:
+    web: 39999
+  # Additional nodeSelector only for scheduling Alluxio proxies
+  nodeSelector: {}
+  # Schedule Alluxio proxies with affinity.
+  affinity: {}
+  # Additional tolerations only for scheduling Alluxio proxies
+  tolerations: []
+  podAnnotations: {}
+
+
+## Alluxio FUSE ##
+
+fuse:
+  # Whether to launch Fuse pods
+  enabled: false
+  # Extra environment variables for the Alluxio fuse pods. Format:
+  # env:
+  #   <key1>: <value1>
+  #   <key2>: <value2>
+  env:
+  # A list of JVM options specific to Alluxio Fuse
+  jvmOptions:
+    - "-XX:MaxDirectMemorySize=2g"
+  # Fuse related mount options
+  mountOptions:
+    - allow_other
+    - entry_timeout=3600
+    - attr_timeout=3600
+  # Resources allocated to the containers running Alluxio Fuse
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "1Gi"
+    limits:
+      cpu: "4"
+      memory: "4Gi"
+  # Additional nodeSelector only for scheduling Alluxio Fuse
+  nodeSelector: {}
+  # Schedule Alluxio Fuse with affinity.
+  affinity: {}
+  # Additional tolerations only for scheduling Alluxio Fuse
+  tolerations: []
+  podAnnotations: {}
+
+##  Metrics System ##
+
+# Settings for Alluxio metrics
+metrics:
+  # Enable ConsoleSink by class name
+  consoleSink:
+    enabled: false
+    # Polling period for ConsoleSink
+    period: 10
+    # Unit of poll period
+    unit: seconds
+  # Enable CsvSink by class name
+  csvSink:
+    enabled: false
+    # Polling period for CsvSink
+    period: 1
+    # Unit of poll period
+    unit: seconds
+    # Polling directory for CsvSink, ensure this directory exists!
+    directory: /tmp/alluxio-metrics
+  # Enable JmxSink by class name
+  jmxSink:
+    enabled: false
+    # Jmx domain
+    domain: org.alluxio
+  # Enable GraphiteSink by class name
+  graphiteSink:
+    enabled: false
+    # Hostname of Graphite server
+    hostname: NONE
+    # Port of Graphite server
+    port: NONE
+    # Poll period
+    period: 10
+    # Unit of poll period
+    unit: seconds
+    # Prefix to prepend to metric name
+    prefix: ""
+  # Enable Slf4jSink by class name
+  slf4jSink:
+    enabled: false
+    # Poll period
+    period: 10
+    # Units of poll period
+    unit: seconds
+    # Contains all metrics
+    filterClass: null
+    # Contains all metrics
+    filterRegex: null
+  # Enable PrometheusMetricsServlet by class name
+  prometheusMetricsServlet:
+    enabled: false
+    # Pod annotations for Prometheus. Example:
+    # podAnnotations:
+    #   prometheus.io/scrape: "true"
+    #   prometheus.io/masterPort: "19999"
+    #   prometheus.io/workerPort: "30000"
+    #   prometheus.io/path: "/metrics/prometheus/"
+    podAnnotations: {}
