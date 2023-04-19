@@ -10,37 +10,37 @@ See the NOTICE file distributed with this work for information regarding copyrig
 {{/* vim: set filetype=mustache: */}}
 
 {{- define "alluxio.metrics.properties" -}}
-{{- if .Values.metrics.ConsoleSink.enabled -}}
-sink.console.class=alluxio.metrics.sink.ConsoleSink
-sink.console.period={{ .Values.metrics.ConsoleSink.period }}
-sink.console.unit={{ .Values.metrics.ConsoleSink.unit }}
+{{- if .Values.metrics.consoleSink.enabled -}}
+sink.console.class=alluxio.metrics.sink.consoleSink
+sink.console.period={{ .Values.metrics.consoleSink.period }}
+sink.console.unit={{ .Values.metrics.consoleSink.unit }}
 {{- end -}}
-{{- if .Values.metrics.CsvSink.enabled -}}
-sink.csv.class=alluxio.metrics.sink.CsvSink
-sink.csv.period={{ .Values.metrics.CsvSink.period }}
-sink.csv.unit={{ .Values.metrics.CsvSink.unit }}
-sink.csv.directory={{ .Values.metrics.CsvSink.directory }}
+{{- if .Values.metrics.csvSink.enabled -}}
+sink.csv.class=alluxio.metrics.sink.csvSink
+sink.csv.period={{ .Values.metrics.csvSink.period }}
+sink.csv.unit={{ .Values.metrics.csvSink.unit }}
+sink.csv.directory={{ .Values.metrics.csvSink.directory }}
 {{- end -}}
-{{- if .Values.metrics.JmxSink.enabled -}}
-sink.jmx.class=alluxio.metrics.sink.JmxSink
-sink.jmx.domain={{ .Values.metrics.JmxSink.domain }}
+{{- if .Values.metrics.jmxSink.enabled -}}
+sink.jmx.class=alluxio.metrics.sink.jmxSink
+sink.jmx.domain={{ .Values.metrics.jmxSink.domain }}
 {{- end -}}
-{{- if .Values.metrics.GraphiteSink.enabled -}}
-sink.graphite.class=alluxio.metrics.sink.GraphiteSink
-sink.graphite.host={{ .Values.metrics.GraphiteSink.host }}
-sink.graphite.port={{ .Values.metrics.GraphiteSink.port }}
-sink.graphite.period={{ .Values.metrics.GraphiteSink.period }}
-sink.graphite.unit={{ .Values.metrics.GraphiteSink.unit }}
-sink.graphite.prefix={{ .Values.metrics.GraphiteSink.prefix }}
+{{- if .Values.metrics.graphiteSink.enabled -}}
+sink.graphite.class=alluxio.metrics.sink.graphiteSink
+sink.graphite.host={{ .Values.metrics.graphiteSink.host }}
+sink.graphite.port={{ .Values.metrics.graphiteSink.port }}
+sink.graphite.period={{ .Values.metrics.graphiteSink.period }}
+sink.graphite.unit={{ .Values.metrics.graphiteSink.unit }}
+sink.graphite.prefix={{ .Values.metrics.graphiteSink.prefix }}
 {{- end -}}
-{{- if .Values.metrics.Slf4jSink.enabled -}}
-sink.slf4j.class=alluxio.metrics.sink.Slf4jSink
-sink.slf4j.period={{ .Values.metrics.Slf4jSink.period }}
-sink.slf4j.unit={{ .Values.metrics.Slf4jSink.unit }}
-sink.slf4j.filter-class={{ .Values.metrics.Slf4jSink.filterClass }}
-sink.slf4j.filter-regex={{ .Values.metrics.Slf4jSink.filterRegex }}
+{{- if .Values.metrics.slf4jSink.enabled -}}
+sink.slf4j.class=alluxio.metrics.sink.slf4jSink
+sink.slf4j.period={{ .Values.metrics.slf4jSink.period }}
+sink.slf4j.unit={{ .Values.metrics.slf4jSink.unit }}
+sink.slf4j.filter-class={{ .Values.metrics.slf4jSink.filterClass }}
+sink.slf4j.filter-regex={{ .Values.metrics.slf4jSink.filterRegex }}
 {{- end -}}
-{{- if .Values.metrics.PrometheusMetricsServlet.enabled -}}
-sink.prometheus.class=alluxio.metrics.sink.PrometheusMetricsServlet
+{{- if .Values.metrics.prometheusMetricsServlet.enabled -}}
+sink.prometheus.class=alluxio.metrics.sink.prometheusMetricsServlet
 {{- end -}}
 {{- end -}}
