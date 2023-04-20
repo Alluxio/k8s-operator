@@ -5,6 +5,8 @@ WORKDIR /opt/alluxio-k8s-operator
 
 COPY .. .
 
+RUN bash -c ./build/generate.sh
+
 RUN go mod download
 
 WORKDIR /opt/alluxio-k8s-operator/cmd

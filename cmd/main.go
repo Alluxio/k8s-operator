@@ -13,18 +13,14 @@ package main
 
 import (
 	"github.com/Alluxio/k8s-operator/cmd/alluxio"
+	"github.com/Alluxio/k8s-operator/pkg/logger"
 	"os"
-	ctrl "sigs.k8s.io/controller-runtime"
-)
-
-var (
-	setupLog = ctrl.Log.WithName("setup main")
 )
 
 func main() {
 	command := alluxio.NewAlluxioManagerCommand()
 	if err := command.Execute(); err != nil {
-		setupLog.Error(err, "Failed to launch Alluxio controller.")
+		logger.Fatalf("Failed to launch Alluxio controller: %v", err)
 		os.Exit(1)
 	}
 	os.Exit(0)

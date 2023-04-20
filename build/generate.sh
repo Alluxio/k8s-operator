@@ -38,14 +38,14 @@ install_controller_gen() {
 }
 
 generate_deepcopy_methods_file() {
-  local cmd=("${CONTROLLER_GEN}" object:headerFile="${SCRIPT_DIR}"/license-header/go.txt paths="${SCRIPT_DIR}"/../...)
+  local cmd=("${CONTROLLER_GEN}" object:headerFile="${SCRIPT_DIR}/license-header/go.txt" paths="${SCRIPT_DIR}/../...")
   "${cmd[@]}"
 }
 
 generate_crds() {
-  local cmd=("${CONTROLLER_GEN}" crd paths="${SCRIPT_DIR}"/../... output:crd:artifacts:config="${SCRIPT_DIR}"/../resources/crds)
+  local cmd=("${CONTROLLER_GEN}" crd paths="${SCRIPT_DIR}/../..." output:crd:artifacts:config="${SCRIPT_DIR}/../resources/crds")
   "${cmd[@]}"
-  for file in "${SCRIPT_DIR}"/../resources/crds/*; do
+  for file in "${SCRIPT_DIR}/../resources/crds/*"; do
     insert_license_header $file
   done
 }

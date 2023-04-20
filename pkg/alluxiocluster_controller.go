@@ -19,13 +19,12 @@ package pkg
 import (
 	"context"
 	alluxiocomv1alpha1 "github.com/Alluxio/k8s-operator/api/v1alpha1"
-	"github.com/go-logr/logr"
+	"github.com/Alluxio/k8s-operator/pkg/logger"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/log"
 	"time"
 )
 
@@ -39,7 +38,6 @@ type ReconcileRequestContext struct {
 	AlluxioCluster client.Object
 	client.Client
 	context.Context
-	Logger logr.Logger
 	types.NamespacedName
 }
 
@@ -50,12 +48,10 @@ type ReconcileResponse struct {
 }
 
 func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger := log.FromContext(context)
-	logger.Info("Reconciling.", "namespace", req.Namespace, "name", req.Name)
+	logger.Infof("Reconciling. Name: %v. Namespace: %v", req.Name, req.Namespace)
 	ctx := ReconcileRequestContext{
 		Client:         r.Client,
 		Context:        context,
-		Logger:         logger,
 		NamespacedName: req.NamespacedName,
 	}
 
@@ -65,10 +61,10 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 	err := r.Get(ctx, req.NamespacedName, alluxioCluster)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			logger.Info("Alluxio cluster's resource not found. Ignoring since object must be deleted")
+			logger.Infof("Alluxio cluster %v in namespace %v not found. Ignoring since object must be deleted", req.Name, req.Namespace)
 			return ctrl.Result{}, nil
 		}
-		logger.Error(err, "Failed to get Alluxio Cluster")
+		logger.Errorf("Failed to get Alluxio cluster %v in namespace %v: %v", req.Name, req.Namespace, err)
 		return ctrl.Result{}, err
 	}
 

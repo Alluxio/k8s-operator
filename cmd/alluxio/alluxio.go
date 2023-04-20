@@ -16,18 +16,17 @@ import (
 	"os"
 
 	alluxiov1alpha1 "github.com/Alluxio/k8s-operator/api/v1alpha1"
+	"github.com/Alluxio/k8s-operator/pkg/logger"
 
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"sigs.k8s.io/controller-runtime/pkg/log/zap"
 )
 
 var (
-	scheme   = runtime.NewScheme()
-	setupLog = ctrl.Log.WithName("setup alluxio manager")
+	scheme = runtime.NewScheme()
 )
 
 func NewAlluxioManagerCommand() *cobra.Command {
@@ -45,14 +44,12 @@ func startAlluxioManager() {
 	utilruntime.Must(clientgoscheme.AddToScheme(scheme))
 	utilruntime.Must(alluxiov1alpha1.AddToScheme(scheme))
 
-	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zap.Options{Development: true})))
-
 	manager, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
 		Port:   9443,
 	})
 	if err != nil {
-		setupLog.Error(err, "Unable to create Alluxio manager.")
+		logger.Fatalf("Unable to create Alluxio manager: %v", err)
 		os.Exit(1)
 	}
 
@@ -60,13 +57,13 @@ func startAlluxioManager() {
 		Client: manager.GetClient(),
 		Scheme: manager.GetScheme(),
 	}).SetupWithManager(manager); err != nil {
-		setupLog.Error(err, "unable to create Alluxio Reconciler")
+		logger.Fatalf("unable to create Alluxio Reconciler: %v", err)
 		os.Exit(1)
 	}
 
-	setupLog.Info("starting manager")
-	if err := manager.Start(ctrl.SetupSignalHandler()); err != nil {
-		setupLog.Error(err, "Error starting Alluxio manager.")
+	logger.Infof("starting manager")
+	if err = manager.Start(ctrl.SetupSignalHandler()); err != nil {
+		logger.Fatalf("Error starting Alluxio manager: %v", err)
 		os.Exit(1)
 	}
 }
