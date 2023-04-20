@@ -21,37 +21,36 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-// EDIT THIS FILE!  THIS IS SCAFFOLDING FOR YOU TO OWN!
 // NOTE: json tags are required.  Any new fields you add must have json tags for the fields to be serialized.
 
 // AlluxioClusterSpec defines the desired state of AlluxioCluster
 type AlluxioClusterSpec struct {
-	Image              string            `json:"image" yaml:"image"`
-	ImageTag           string            `json:"imageTag" yaml:"imageTag"`
-	ImagePullPolicy    string            `json:"imagePullPolicy" yaml:"imagePullPolicy"`
-	ImagePullSecrets   []string          `json:"imagePullSecrets" yaml:"imagePullSecrets"`
-	User               string            `json:"user" yaml:"user"`
-	Group              string            `json:"group" yaml:"group"`
-	FsGroup            string            `json:"fsGroup" yaml:"fsGroup"`
-	HostNetwork        string            `json:"hostNetwork" yaml:"hostNetwork"`
-	DnsPolicy          string            `json:"dnsPolicy" yaml:"dnsPolicy"`
-	ServiceAccountName string            `json:"serviceAccountName" yaml:"serviceAccountName"`
-	HostAliases        []HostAlias       `json:"hostAliases" yaml:"hostAliases"`
-	NodeSelector       map[string]string `json:"nodeSelector" yaml:"nodeSelector"`
-	Tolerations        []Toleration      `json:"tolerations" yaml:"tolerations"`
-	JvmOptions         []string          `json:"jvmOptions" yaml:"jvmOptions"`
-	PvcMounts          MountSpec         `json:"pvcMounts" yaml:"pvcMounts"`
-	ConfigMaps         MountSpec         `json:"configMaps" yaml:"ConfigMaps"`
-	Secrets            MountSpec         `json:"secrets" yaml:"secrets"`
+	Image              string            `json:"image,omitempty" yaml:"image,omitempty"`
+	ImageTag           string            `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
+	ImagePullPolicy    string            `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
+	ImagePullSecrets   []string          `json:"imagePullSecrets,omitempty" yaml:"imagePullSecrets,omitempty"`
+	User               string            `json:"user,omitempty" yaml:"user,omitempty"`
+	Group              string            `json:"group,omitempty" yaml:"group,omitempty"`
+	FsGroup            string            `json:"fsGroup,omitempty" yaml:"fsGroup,omitempty"`
+	HostNetwork        string            `json:"hostNetwork,omitempty" yaml:"hostNetwork,omitempty"`
+	DnsPolicy          string            `json:"dnsPolicy,omitempty" yaml:"dnsPolicy,omitempty"`
+	ServiceAccountName string            `json:"serviceAccountName,omitempty" yaml:"serviceAccountName,omitempty"`
+	HostAliases        []HostAlias       `json:"hostAliases,omitempty" yaml:"hostAliases,omitempty"`
+	NodeSelector       map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
+	Tolerations        []Toleration      `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
+	JvmOptions         []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
+	PvcMounts          MountSpec         `json:"pvcMounts,omitempty" yaml:"pvcMounts,omitempty"`
+	ConfigMaps         MountSpec         `json:"configMaps,omitempty" yaml:"configMaps,omitempty"`
+	Secrets            MountSpec         `json:"secrets,omitempty" yaml:"secrets,omitempty"`
 	Dataset            DatasetSpec       `json:"dataset" yaml:"dataset"`
-	Master             MasterSpec        `json:"master" yaml:"master"`
-	Journal            JournalSpec       `json:"journal" yaml:"journal"`
-	Worker             WorkerSpec        `json:"worker" yaml:"worker"`
-	Pagestore          PagestoreSpec     `json:"pagestore" yaml:"pagestore"`
-	Metastore          MetastoreSpec     `json:"metastore" yaml:"metastore"`
-	Proxy              ProxySpec         `json:"proxy" yaml:"proxy"`
-	Fuse               FuseSpec          `json:"fuse" yaml:"fuse"`
-	Metrics            MetricsSpec       `json:"metrics" yaml:"metrics"`
+	Master             MasterSpec        `json:"master,omitempty" yaml:"master,omitempty"`
+	Journal            JournalSpec       `json:"journal,omitempty" yaml:"journal,omitempty"`
+	Worker             WorkerSpec        `json:"worker,omitempty" yaml:"worker,omitempty"`
+	Pagestore          PagestoreSpec     `json:"pagestore,omitempty" yaml:"pagestore,omitempty"`
+	Metastore          MetastoreSpec     `json:"metastore,omitempty" yaml:"metastore,omitempty"`
+	Proxy              ProxySpec         `json:"proxy,omitempty" yaml:"proxy,omitempty"`
+	Fuse               FuseSpec          `json:"fuse,omitempty" yaml:"fuse,omitempty"`
+	Metrics            MetricsSpec       `json:"metrics,omitempty" yaml:"metrics,omitempty"`
 }
 
 type HostAlias struct {
@@ -67,170 +66,158 @@ type Toleration struct {
 }
 
 type MountSpec struct {
-	Master map[string]string `json:"master" yaml:"master"`
-	Worker map[string]string `json:"worker" yaml:"worker"`
-	Fuse   map[string]string `json:"fuse" yaml:"fuse"`
-	Proxy  map[string]string `json:"proxy" yaml:"proxy"`
+	Master map[string]string `json:"master,omitempty" yaml:"master,omitempty"`
+	Worker map[string]string `json:"worker,omitempty" yaml:"worker,omitempty"`
+	Fuse   map[string]string `json:"fuse,omitempty" yaml:"fuse,omitempty"`
+	Proxy  map[string]string `json:"proxy,omitempty" yaml:"proxy,omitempty"`
 }
 
 type DatasetSpec struct {
 	Path        string            `json:"path" yaml:"path"`
-	Credentials map[string]string `json:"credentials" yaml:"credentials"`
+	Credentials map[string]string `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 }
 
 type MasterSpec struct {
-	Affinity       corev1.Affinity   `json:"affinity" yaml:"affinity"`
-	Count          int               `json:"count" yaml:"count"`
-	Enabled        bool              `json:"enabled" yaml:"enabled"`
-	Env            map[string]string `json:"env" yaml:"env"`
-	JvmOptions     []string          `json:"jvmOptions" yaml:"jvmOptions"`
-	LivenessProbe  ProbeSpec         `json:"livenessProbe" yaml:"livenessProbe"`
-	NodeSelector   map[string]string `json:"nodeSelector" yaml:"nodeSelector"`
-	PodAnnotations map[string]string `json:"podAnnotations" yaml:"podAnnotations"`
-	Ports          map[string]int    `json:"ports" yaml:"port"`
-	ReadinessProbe ProbeSpec         `json:"readinessProbe" yaml:"readinessProbe"`
-	Resources      ResourcesSpec     `json:"resources" yaml:"resources"`
-	StartupProbe   ProbeSpec         `json:"startupProbe" yaml:"startupProbe"`
-	Tolerations    []Toleration      `json:"tolerations" yaml:"tolerations"`
+	Affinity       corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	Count          int               `json:"count,omitempty" yaml:"count,omitempty"`
+	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Env            map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
+	JvmOptions     []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
+	LivenessProbe  ProbeSpec         `json:"livenessProbe,omitempty" yaml:"livenessProbe,omitempty"`
+	NodeSelector   map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty" yaml:"podAnnotations,omitempty"`
+	Ports          map[string]int    `json:"ports,omitempty" yaml:"port,omitempty"`
+	ReadinessProbe ProbeSpec         `json:"readinessProbe,omitempty" yaml:"readinessProbe,omitempty"`
+	Resources      ResourcesSpec     `json:"resources,omitempty" yaml:"resources,omitempty"`
+	StartupProbe   ProbeSpec         `json:"startupProbe,omitempty" yaml:"startupProbe,omitempty"`
+	Tolerations    []Toleration      `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
 }
 
 type JournalSpec struct {
-	RunFormat    bool   `json:"runFormat" yaml:"runFormat"`
-	Size         string `json:"size" yaml:"size"`
-	StorageClass string `json:"storageClass" yaml:"storageClass"`
+	RunFormat    bool   `json:"runFormat,omitempty" yaml:"runFormat,omitempty"`
+	Size         string `json:"size,omitempty" yaml:"size,omitempty"`
+	StorageClass string `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
 }
 
 type WorkerSpec struct {
-	Affinity             corev1.Affinity   `json:"affinity" yaml:"affinity"`
-	Count                int               `json:"count" yaml:"count"`
-	Env                  map[string]string `json:"env" yaml:"env"`
-	JvmOptions           []string          `json:"jvmOptions" yaml:"jvmOptions"`
-	LimitOneWorkerPerPod bool              `json:"limitOneWorkerPerPod" yaml:"limitOneWorkerPerPod"`
-	LivenessProbe        ProbeSpec         `json:"livenessProbe" yaml:"livenessProbe"`
-	NodeSelector         map[string]string `json:"nodeSelector" yaml:"nodeSelector"`
-	PodAnnotations       map[string]string `json:"podAnnotations" yaml:"podAnnotations"`
-	Ports                map[string]int    `json:"ports" yaml:"ports"`
-	ReadinessProbe       ProbeSpec         `json:"readinessProbe" yaml:"readinessProbe"`
-	Resources            ResourcesSpec     `json:"resources" yaml:"resources"`
-	StartupProbe         ProbeSpec         `json:"startupProbe" yaml:"startupProbe"`
-	Tolerations          []Toleration      `json:"tolerations" yaml:"tolerations"`
+	Affinity             corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	Count                int               `json:"count,omitempty" yaml:"count,omitempty"`
+	Env                  map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
+	JvmOptions           []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
+	LimitOneWorkerPerPod bool              `json:"limitOneWorkerPerPod,omitempty" yaml:"limitOneWorkerPerPod,omitempty"`
+	LivenessProbe        ProbeSpec         `json:"livenessProbe,omitempty" yaml:"livenessProbe,omitempty"`
+	NodeSelector         map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
+	PodAnnotations       map[string]string `json:"podAnnotations,omitempty" yaml:"podAnnotations,omitempty"`
+	Ports                map[string]int    `json:"ports,omitempty" yaml:"ports,omitempty"`
+	ReadinessProbe       ProbeSpec         `json:"readinessProbe,omitempty" yaml:"readinessProbe,omitempty"`
+	Resources            ResourcesSpec     `json:"resources,omitempty" yaml:"resources,omitempty"`
+	StartupProbe         ProbeSpec         `json:"startupProbe,omitempty" yaml:"startupProbe,omitempty"`
+	Tolerations          []Toleration      `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
 }
 
 type PagestoreSpec struct {
-	HostPath     string `json:"hostPath" yaml:"hostPath"`
-	MemoryBacked bool   `json:"memoryBacked" yaml:"memoryBacked"`
-	Quota        string `json:"quota" yaml:"quota"`
-	StorageClass string `json:"storageClass" yaml:"storageClass"`
-	Type         string `json:"type" yaml:"type"`
+	HostPath     string `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
+	MemoryBacked bool   `json:"memoryBacked,omitempty" yaml:"memoryBacked,omitempty"`
+	Quota        string `json:"quota,omitempty" yaml:"quota,omitempty"`
+	StorageClass string `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
+	Type         string `json:"type,omitempty" yaml:"type,omitempty"`
 }
 
 type MetastoreSpec struct {
-	Enabled      bool   `json:"enabled" yaml:"enabled"`
-	Size         string `json:"size" yaml:"size"`
-	StorageClass string `json:"storageClass" yaml:"storageClass"`
+	Enabled      bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Size         string `json:"size,omitempty" yaml:"size,omitempty"`
+	StorageClass string `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
 }
 
 type ProxySpec struct {
-	Affinity       corev1.Affinity   `json:"affinity" yaml:"affinity"`
-	Enabled        bool              `json:"enabled" yaml:"enabled"`
-	Env            map[string]string `json:"env" yaml:"env"`
-	JvmOptions     []string          `json:"jvmOptions" yaml:"jvmOptions"`
-	NodeSelector   map[string]string `json:"nodeSelector" yaml:"nodeSelector"`
-	PodAnnotations map[string]string `json:"podAnnotations" yaml:"podAnnotations"`
-	Ports          map[string]int    `json:"ports" yaml:"ports"`
-	Resources      ResourcesSpec     `json:"resources" yaml:"resources"`
-	Tolerations    []Toleration      `json:"tolerations" yaml:"tolerations"`
+	Affinity       corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Env            map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
+	JvmOptions     []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
+	NodeSelector   map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty" yaml:"podAnnotations,omitempty"`
+	Ports          map[string]int    `json:"ports,omitempty" yaml:"ports,omitempty"`
+	Resources      ResourcesSpec     `json:"resources,omitempty" yaml:"resources,omitempty"`
+	Tolerations    []Toleration      `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
 }
 
 type FuseSpec struct {
-	Affinity       corev1.Affinity   `json:"affinity" yaml:"affinity"`
-	Enabled        bool              `json:"enabled" yaml:"enabled"`
-	Env            map[string]string `json:"env" yaml:"env"`
-	JvmOptions     []string          `json:"jvmOptions" yaml:"jvmOptions"`
-	MountOptions   []string          `json:"mountOptions" yaml:"mountOptions"`
-	NodeSelector   map[string]string `json:"nodeSelector" yaml:"nodeSelector"`
-	PodAnnotations map[string]string `json:"podAnnotations" yaml:"podAnnotations"`
-	Resources      ResourcesSpec     `json:"resources" yaml:"resources"`
-	Tolerations    []Toleration      `json:"tolerations" yaml:"tolerations"`
+	Affinity       corev1.Affinity   `json:"affinity,omitempty" yaml:"affinity,omitempty"`
+	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Env            map[string]string `json:"env,omitempty" yaml:"env,omitempty"`
+	JvmOptions     []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
+	MountOptions   []string          `json:"mountOptions,omitempty" yaml:"mountOptions,omitempty"`
+	NodeSelector   map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty" yaml:"podAnnotations,omitempty"`
+	Resources      ResourcesSpec     `json:"resources,omitempty" yaml:"resources,omitempty"`
+	Tolerations    []Toleration      `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
 }
 
 type ResourcesSpec struct {
-	Limits   CpuMemSpec `json:"limits" yaml:"limits"`
-	Requests CpuMemSpec `json:"requests" yaml:"requests"`
+	Limits   CpuMemSpec `json:"limits,omitempty" yaml:"limits,omitempty"`
+	Requests CpuMemSpec `json:"requests,omitempty" yaml:"requests,omitempty"`
 }
 
 type CpuMemSpec struct {
-	Cpu    string `json:"cpu" yaml:"cpu"`
-	Memory string `json:"memory" yaml:"memory"`
+	Cpu    string `json:"cpu,omitempty" yaml:"cpu,omitempty"`
+	Memory string `json:"memory,omitempty" yaml:"memory,omitempty"`
 }
 
 type ProbeSpec struct {
-	FailureThreshold    int `json:"failureThreshold" yaml:"failureThreshold"`
-	InitialDelaySeconds int `json:"initialDelaySeconds" yaml:"initialDelaySeconds"`
-	PeriodSeconds       int `json:"periodSeconds" yaml:"periodSeconds"`
-	SuccessThreshold    int `json:"successThreshold" yaml:"successThreshold"`
-	TimeoutSeconds      int `json:"timeoutSeconds" yaml:"timeoutSeconds"`
+	FailureThreshold    int `json:"failureThreshold,omitempty" yaml:"failureThreshold,omitempty"`
+	InitialDelaySeconds int `json:"initialDelaySeconds,omitempty" yaml:"initialDelaySeconds,omitempty"`
+	PeriodSeconds       int `json:"periodSeconds,omitempty" yaml:"periodSeconds,omitempty"`
+	SuccessThreshold    int `json:"successThreshold,omitempty" yaml:"successThreshold,omitempty"`
+	TimeoutSeconds      int `json:"timeoutSeconds,omitempty" yaml:"timeoutSeconds,omitempty"`
 }
 
 type MetricsSpec struct {
-	ConsoleSink              ConsoleSinkSpec              `json:"consoleSink" yaml:"consoleSink"`
-	CsvSink                  CsvSinkSpec                  `json:"csvSink" yaml:"csvSink"`
-	GraphiteSink             GraphiteSinkSpec             `json:"graphiteSink" yaml:"graphiteSink"`
-	JmxSink                  JmxSinkSpec                  `json:"jmxSink" yaml:"jmxSink"`
-	PrometheusMetricsServlet PrometheusMetricsServletSpec `json:"prometheusMetricsServlet" yaml:"prometheusMetricsServlet"`
-	Slf4jSink                Slf4jSinkSpec                `json:"Slf4jSink" yaml:"Slf4jSink"`
+	ConsoleSink              ConsoleSinkSpec              `json:"consoleSink,omitempty" yaml:"consoleSink,omitempty"`
+	CsvSink                  CsvSinkSpec                  `json:"csvSink,omitempty" yaml:"csvSink,omitempty"`
+	GraphiteSink             GraphiteSinkSpec             `json:"graphiteSink,omitempty" yaml:"graphiteSink,omitempty"`
+	JmxSink                  JmxSinkSpec                  `json:"jmxSink,omitempty" yaml:"jmxSink,omitempty"`
+	PrometheusMetricsServlet PrometheusMetricsServletSpec `json:"prometheusMetricsServlet,omitempty" yaml:"prometheusMetricsServlet,omitempty"`
+	Slf4jSink                Slf4jSinkSpec                `json:"slf4jSink,omitempty" yaml:"slf4jSink,omitempty"`
 }
 
 type ConsoleSinkSpec struct {
-	Enabled bool   `json:"enabled" yaml:"enabled"`
-	Period  int    `json:"period" yaml:"period"`
-	Unit    string `json:"unit" yaml:"unit"`
+	Enabled bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Period  int    `json:"period,omitempty" yaml:"period,omitempty"`
+	Unit    string `json:"unit,omitempty" yaml:"unit,omitempty"`
 }
 
 type CsvSinkSpec struct {
-	Directory string `json:"directory" yaml:"directory"`
-	Enabled   bool   `json:"enabled" yaml:"enabled"`
-	Period    int    `json:"period" yaml:"period"`
-	Unit      string `json:"unit" yaml:"unit"`
+	Directory string `json:"directory,omitempty" yaml:"directory,omitempty"`
+	Enabled   bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Period    int    `json:"period,omitempty" yaml:"period,omitempty"`
+	Unit      string `json:"unit,omitempty" yaml:"unit,omitempty"`
 }
 
 type GraphiteSinkSpec struct {
-	Enabled  bool   `json:"enabled" yaml:"enabled"`
-	Hostname string `json:"hostname" yaml:"hostname"`
-	Period   int    `json:"period" yaml:"period"`
-	Port     int    `json:"port" yaml:"port"`
-	Prefix   string `json:"prefix" yaml:"prefix"`
-	Unit     string `json:"unit" yaml:"unit"`
+	Enabled  bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Hostname string `json:"hostname,omitempty" yaml:"hostname,omitempty"`
+	Period   int    `json:"period,omitempty" yaml:"period,omitempty"`
+	Port     int    `json:"port,omitempty" yaml:"port,omitempty"`
+	Prefix   string `json:"prefix,omitempty" yaml:"prefix,omitempty"`
+	Unit     string `json:"unit,omitempty" yaml:"unit,omitempty"`
 }
 
 type JmxSinkSpec struct {
-	Enabled bool   `json:"enabled" yaml:"enabled"`
-	Domain  string `json:"domain" yaml:"domain"`
+	Enabled bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	Domain  string `json:"domain,omitempty" yaml:"domain,omitempty"`
 }
 
 type PrometheusMetricsServletSpec struct {
-	Enabled        bool              `json:"enabled" yaml:"enabled"`
-	PodAnnotations map[string]string `json:"podAnnotations" yaml:"podAnnotations"`
+	Enabled        bool              `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	PodAnnotations map[string]string `json:"podAnnotations,omitempty" yaml:"podAnnotations,omitempty"`
 }
 
 type Slf4jSinkSpec struct {
-	Enabled     bool   `json:"enabled" yaml:"enabled"`
-	FilterClass string `json:"filterClass" yaml:"filterClass"`
-	FilterRegex string `json:"filterRegex" yaml:"filterRegex"`
-	Period      int    `json:"period" yaml:"period"`
-	Unit        string `json:"unit" yaml:"unit"`
-}
-
-// AlluxioClusterStatus defines the observed state of AlluxioCluster
-type AlluxioClusterStatus struct {
-	// INSERT ADDITIONAL STATUS FIELD - define observed state of cluster
-	Nodes []NodeStatus `json:"nodes" yaml:"nodes"`
-}
-
-type NodeStatus struct {
-	Name  string          `json:"name" yaml:"name"`
-	Phase corev1.PodPhase `json:"phase,omitempty" yaml:"phase,omitempty"`
-	PodIP string          `json:"podIP,omitempty" yaml:"podIP,omitempty"`
+	Enabled     bool   `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	FilterClass string `json:"filterClass,omitempty" yaml:"filterClass,omitempty"`
+	FilterRegex string `json:"filterRegex,omitempty" yaml:"filterRegex,omitempty"`
+	Period      int    `json:"period,omitempty" yaml:"period,omitempty"`
+	Unit        string `json:"unit,omitempty" yaml:"unit,omitempty"`
 }
 
 //+kubebuilder:object:root=true
@@ -251,8 +238,7 @@ type AlluxioCluster struct {
 type AlluxioClusterList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`
-	Spec            AlluxioClusterSpec   `json:"spec,omitempty"`
-	Status          AlluxioClusterStatus `json:"status,omitempty"`
+	Items           []AlluxioCluster `json:"items"`
 }
 
 func init() {

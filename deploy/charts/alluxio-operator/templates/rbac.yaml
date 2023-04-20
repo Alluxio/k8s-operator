@@ -41,6 +41,9 @@ rules:
     resources: ["services"]
     verbs: ["get", "list", "watch", "create", "delete"]
   - apiGroups: [""]
+    resources: ["secrets"]
+    verbs: ["get", "list", "watch", "create", "delete", "update"]
+  - apiGroups: [""]
     resources: ["nodes"]
     verbs: ["get", "list", "watch"]
   - apiGroups: ["apps"]
@@ -52,6 +55,9 @@ rules:
   - apiGroups: [ "apps" ]
     resources: [ "deployments" ]
     verbs: [ "get", "list", "watch", "create", "delete", "update" ]
+  - apiGroups: ["k8s-operator.alluxio.com"]
+    resources: ["alluxioclusters"]
+    verbs: [ "*" ]
 ---
 
 kind: ClusterRoleBinding

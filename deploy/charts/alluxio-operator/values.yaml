@@ -12,6 +12,6 @@
 # The following value should not be modified in the usual case.
 nameOverride: alluxio-operator
 
-image: alluxiotest/operator
+image: ssz1997/alluxio-k8s-operator
 imageTag: latest
-imagePullPolicy: IfNotPresent
+imagePullPolicy: Always

@@ -18,13 +18,15 @@ package pkg
 
 import (
 	"context"
-
+	alluxiocomv1alpha1 "github.com/Alluxio/k8s-operator/api/v1alpha1"
+	"github.com/go-logr/logr"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/log"
-
-	alluxiocomv1alpha1 "github.com/Alluxio/k8s-operator/api/v1alpha1"
+	"time"
 )
 
 // AlluxioClusterReconciler reconciles a AlluxioCluster object
@@ -33,25 +35,51 @@ type AlluxioClusterReconciler struct {
 	Scheme *runtime.Scheme
 }
 
-//+kubebuilder:rbac:groups=alluxio.com.alluxio.com,resources=alluxioclusters,verbs=get;list;watch;create;update;patch;delete
-//+kubebuilder:rbac:groups=alluxio.com.alluxio.com,resources=alluxioclusters/status,verbs=get;update;patch
-//+kubebuilder:rbac:groups=alluxio.com.alluxio.com,resources=alluxioclusters/finalizers,verbs=update
+type ReconcileRequestContext struct {
+	AlluxioCluster client.Object
+	client.Client
+	context.Context
+	Logger logr.Logger
+	types.NamespacedName
+}
 
-// Reconcile is part of the main kubernetes reconciliation loop which aims to
-// move the current state of the cluster closer to the desired state.
-// TODO(user): Modify the Reconcile function to compare the state specified by
-// the AlluxioCluster object against the actual cluster state, and then
-// perform operations to make the cluster state reflect the state specified by
-// the user.
-//
-// For more details, check Reconcile and its Result here:
-// - https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.13.0/pkg/reconcile
-func (r *AlluxioClusterReconciler) Reconcile(ctx context.Context, req ctrl.Request) (ctrl.Result, error) {
-	_ = log.FromContext(ctx)
+type ReconcileResponse struct {
+	Err        error
+	NeedReturn bool
+	Result     ctrl.Result
+}
 
-	// TODO(user): your logic here
+func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
+	logger := log.FromContext(context)
+	logger.Info("Reconciling.", "namespace", req.Namespace, "name", req.Name)
+	ctx := ReconcileRequestContext{
+		Client:         r.Client,
+		Context:        context,
+		Logger:         logger,
+		NamespacedName: req.NamespacedName,
+	}
 
-	return ctrl.Result{}, nil
+	alluxioCluster := &alluxiocomv1alpha1.AlluxioCluster{}
+	ctx.AlluxioCluster = alluxioCluster
+
+	err := r.Get(ctx, req.NamespacedName, alluxioCluster)
+	if err != nil {
+		if errors.IsNotFound(err) {
+			logger.Info("Alluxio cluster's resource not found. Ignoring since object must be deleted")
+			return ctrl.Result{}, nil
+		}
+		logger.Error(err, "Failed to get Alluxio Cluster")
+		return ctrl.Result{}, err
+	}
+
+	if alluxioCluster.Status.Phase == alluxiocomv1alpha1.ClusterPhaseNone {
+		alluxioCluster.Status.Phase = alluxiocomv1alpha1.ClusterPhaseCreating
+		if res := CreateAlluxioCluster(ctx); res.NeedReturn {
+			return res.Result, res.Err
+		}
+	}
+
+	return ctrl.Result{RequeueAfter: 2 * time.Minute}, nil
 }
 
 // SetupWithManager sets up the controller with the Manager.

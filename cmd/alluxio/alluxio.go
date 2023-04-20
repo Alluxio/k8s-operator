@@ -12,6 +12,7 @@
 package alluxio
 
 import (
+	"github.com/Alluxio/k8s-operator/pkg"
 	"os"
 
 	alluxiov1alpha1 "github.com/Alluxio/k8s-operator/api/v1alpha1"
@@ -32,7 +33,7 @@ var (
 func NewAlluxioManagerCommand() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:   "alluxio-manager start",
-		Short: "Start the controller of alluxio",
+		Short: "Start the manager of alluxio",
 		Run: func(cmd *cobra.Command, args []string) {
 			startAlluxioManager()
 		},
@@ -46,13 +47,26 @@ func startAlluxioManager() {
 
 	ctrl.SetLogger(zap.New(zap.UseFlagOptions(&zap.Options{Development: true})))
 
-	_, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
+	manager, err := ctrl.NewManager(ctrl.GetConfigOrDie(), ctrl.Options{
 		Scheme: scheme,
 		Port:   9443,
 	})
 	if err != nil {
-		setupLog.Error(err, "unable to start Alluxio manager")
+		setupLog.Error(err, "Unable to create Alluxio manager.")
 		os.Exit(1)
 	}
-	// TODO Actually start controller(s)
+
+	if err = (&pkg.AlluxioClusterReconciler{
+		Client: manager.GetClient(),
+		Scheme: manager.GetScheme(),
+	}).SetupWithManager(manager); err != nil {
+		setupLog.Error(err, "unable to create Alluxio Reconciler")
+		os.Exit(1)
+	}
+
+	setupLog.Info("starting manager")
+	if err := manager.Start(ctrl.SetupSignalHandler()); err != nil {
+		setupLog.Error(err, "Error starting Alluxio manager.")
+		os.Exit(1)
+	}
 }

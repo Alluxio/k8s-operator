@@ -27,6 +27,5 @@ func main() {
 		setupLog.Error(err, "Failed to launch Alluxio controller.")
 		os.Exit(1)
 	}
-	setupLog.Info("succeeded. exiting...")
 	os.Exit(0)
 }
