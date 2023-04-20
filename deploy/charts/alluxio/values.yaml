@@ -160,15 +160,19 @@ master:
   podAnnotations: {}
 
 # Journal system of Alluxio master.
-# Only Embedded journal is supported at the moment.
-# Persistent Volume is required for storing journal.
 journal:
-  # Size of requested storage capacity for the persistentVolumeClaim
-  size: 1Gi
-  # StorageClass of the Persistent Volume for journal
-  storageClass: "standard"
   # Whether to format the journal directory
   runFormat: false
+  # PersistentVolumeClaim and hostPath are supported for storing journal.
+  type: hostPath
+  # Size of requested storage capacity for the persistentVolumeClaim.
+  # Required for type persistentVolumeClaim. Ignored otherwise.
+  size: 1Gi
+  # Required for type persistentVolumeClaim. Ignored otherwise.
+  storageClass: "standard"
+  # Required for type hostPath. Ignored otherwise.
+  # An initContainer running as root will change the owner of this directory to Alluxio.
+  hostPath: /mnt/alluxio/journal
 
 
 ## Alluxio Worker ##
