@@ -11,36 +11,36 @@ See the NOTICE file distributed with this work for information regarding copyrig
 
 {{- define "alluxio.metrics.properties" -}}
 {{- if .Values.metrics.consoleSink.enabled -}}
-sink.console.class=alluxio.metrics.sink.consoleSink
+sink.console.class=alluxio.metrics.sink.ConsoleSink
 sink.console.period={{ .Values.metrics.consoleSink.period }}
 sink.console.unit={{ .Values.metrics.consoleSink.unit }}
 {{- end -}}
 {{- if .Values.metrics.csvSink.enabled -}}
-sink.csv.class=alluxio.metrics.sink.csvSink
+sink.csv.class=alluxio.metrics.sink.CsvSink
 sink.csv.period={{ .Values.metrics.csvSink.period }}
 sink.csv.unit={{ .Values.metrics.csvSink.unit }}
 sink.csv.directory={{ .Values.metrics.csvSink.directory }}
 {{- end -}}
 {{- if .Values.metrics.jmxSink.enabled -}}
-sink.jmx.class=alluxio.metrics.sink.jmxSink
+sink.jmx.class=alluxio.metrics.sink.JmxSink
 sink.jmx.domain={{ .Values.metrics.jmxSink.domain }}
 {{- end -}}
 {{- if .Values.metrics.graphiteSink.enabled -}}
-sink.graphite.class=alluxio.metrics.sink.graphiteSink
-sink.graphite.host={{ .Values.metrics.graphiteSink.host }}
+sink.graphite.class=alluxio.metrics.sink.GraphiteSink
+sink.graphite.host={{ .Values.metrics.graphiteSink.hostname }}
 sink.graphite.port={{ .Values.metrics.graphiteSink.port }}
 sink.graphite.period={{ .Values.metrics.graphiteSink.period }}
 sink.graphite.unit={{ .Values.metrics.graphiteSink.unit }}
 sink.graphite.prefix={{ .Values.metrics.graphiteSink.prefix }}
 {{- end -}}
 {{- if .Values.metrics.slf4jSink.enabled -}}
-sink.slf4j.class=alluxio.metrics.sink.slf4jSink
+sink.slf4j.class=alluxio.metrics.sink.Slf4jSink
 sink.slf4j.period={{ .Values.metrics.slf4jSink.period }}
 sink.slf4j.unit={{ .Values.metrics.slf4jSink.unit }}
 sink.slf4j.filter-class={{ .Values.metrics.slf4jSink.filterClass }}
 sink.slf4j.filter-regex={{ .Values.metrics.slf4jSink.filterRegex }}
 {{- end -}}
 {{- if .Values.metrics.prometheusMetricsServlet.enabled -}}
-sink.prometheus.class=alluxio.metrics.sink.prometheusMetricsServlet
+sink.prometheus.class=alluxio.metrics.sink.PrometheusMetricsServlet
 {{- end -}}
 {{- end -}}
