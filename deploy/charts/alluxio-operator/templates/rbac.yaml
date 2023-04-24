@@ -49,15 +49,15 @@ rules:
   - apiGroups: ["apps"]
     resources: ["statefulsets"]
     verbs: ["get", "list", "watch", "create", "delete", "update"]
-  - apiGroups: [ "apps" ]
-    resources: [ "daemonsets" ]
+  - apiGroups: ["apps"]
+    resources: ["daemonsets"]
     verbs: [ "get", "list", "watch", "create", "delete", "update" ]
-  - apiGroups: [ "apps" ]
-    resources: [ "deployments" ]
+  - apiGroups: ["apps"]
+    resources: ["deployments"]
     verbs: [ "get", "list", "watch", "create", "delete", "update" ]
   - apiGroups: ["k8s-operator.alluxio.com"]
-    resources: ["alluxioclusters"]
-    verbs: [ "*" ]
+    resources: ["*"]
+    verbs: ["*"]
 ---
 
 kind: ClusterRoleBinding

@@ -25,6 +25,7 @@ import (
 
 // AlluxioClusterSpec defines the desired state of AlluxioCluster
 type AlluxioClusterSpec struct {
+	NameOverride       string            `json:"nameOverride,omitempty" yaml:"nemOverride,omitempty"`
 	Image              string            `json:"image,omitempty" yaml:"image,omitempty"`
 	ImageTag           string            `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
 	ImagePullPolicy    string            `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
@@ -220,8 +221,10 @@ type Slf4jSinkSpec struct {
 	Unit        string `json:"unit,omitempty" yaml:"unit,omitempty"`
 }
 
-//+kubebuilder:object:root=true
-//+kubebuilder:subresource:status
+// +kubebuilder:object:root=true
+// +kubebuilder:subresource:status
+// +kubebuilder:printcolumn:name="ClusterPhase",type="string",JSONPath=`.status.phase`,priority=0
+// +kubebuilder:printcolumn:name="Age",type="date",JSONPath=`.metadata.creationTimestamp`,priority=0
 
 // AlluxioCluster is the Schema for the alluxioclusters API
 type AlluxioCluster struct {
@@ -232,7 +235,7 @@ type AlluxioCluster struct {
 	Status AlluxioClusterStatus `json:"status,omitempty"`
 }
 
-//+kubebuilder:object:root=true
+// +kubebuilder:object:root=true
 
 // AlluxioClusterList contains a list of AlluxioCluster
 type AlluxioClusterList struct {

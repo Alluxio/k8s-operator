@@ -15,7 +15,7 @@ type HelmContext struct {
 
 func HelmInstall(ctx HelmContext) error {
 	args := []string{"install", "-f", ctx.ConfigFilePath, "--namespace", ctx.Namespace, ctx.ReleaseName, ctx.HelmChartPath}
-	if err := executeHelmCommand(args); err != nil {
+	if _, err := executeHelmCommand(args); err != nil {
 		logger.Errorf("Error installing Helm release with name %v in namespace %v.", ctx.ReleaseName, ctx.Namespace)
 		return err
 	}
@@ -23,31 +23,40 @@ func HelmInstall(ctx HelmContext) error {
 }
 
 func HelmDeleteIfExist(ctx HelmContext) error {
-	if err := HelmStatus(ctx); err == nil {
+	exists, err := checkIfHelmReleaseExists(ctx)
+	if err != nil {
+		logger.Errorf("Error checking if Helm release with name %v in namespace %v exists", ctx.ReleaseName, ctx.Namespace)
+		return err
+	}
+	if exists {
 		args := []string{"delete", ctx.ReleaseName, "-n", ctx.Namespace}
-		if err := executeHelmCommand(args); err != nil {
-			logger.Errorf("Error deleting Helm release with name %v in namespace %v", ctx.ReleaseName, ctx.Namespace)
+		if _, err := executeHelmCommand(args); err != nil {
+			logger.Errorf("Error deleting Helm release with name %v in namespace %v.", ctx.ReleaseName, ctx.Namespace)
 			return err
 		}
 	}
 	return nil
 }
 
-func HelmStatus(ctx HelmContext) error {
-	args := []string{"status", ctx.ReleaseName, "-n", ctx.Namespace}
-	if err := executeHelmCommand(args); err != nil {
-		logger.Errorf("Error checking status of Helm release with name %v in namespace %v", ctx.ReleaseName, ctx.Namespace)
-		return err
+func checkIfHelmReleaseExists(ctx HelmContext) (bool, error) {
+	args := []string{"list", "--filter", ctx.ReleaseName, "-n", ctx.Namespace, "-q"}
+	output, err := executeHelmCommand(args)
+	if err != nil {
+		logger.Errorf("Error listing Helm release with name %v in namespace %v", ctx.ReleaseName, ctx.Namespace)
+		return false, err
 	}
-	return nil
+	if len(output) != 0 {
+		return true, nil
+	}
+	return false, nil
 }
 
-func executeHelmCommand(args []string) error {
+func executeHelmCommand(args []string) (string, error) {
 	cmd := exec.Command("helm", args...)
 	out, err := cmd.CombinedOutput()
 	if err != nil {
 		logger.Errorf("Error running command %v. Output: %v. Error: %v", cmd.String(), string(out), err)
-		return err
+		return "", err
 	}
-	return nil
+	return string(out), nil
 }

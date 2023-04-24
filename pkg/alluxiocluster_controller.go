@@ -25,7 +25,6 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
 )
 
 // AlluxioClusterReconciler reconciles a AlluxioCluster object
@@ -35,16 +34,10 @@ type AlluxioClusterReconciler struct {
 }
 
 type ReconcileRequestContext struct {
-	AlluxioCluster client.Object
+	*alluxiocomv1alpha1.AlluxioCluster
 	client.Client
 	context.Context
 	types.NamespacedName
-}
-
-type ReconcileResponse struct {
-	Err        error
-	NeedReturn bool
-	Result     ctrl.Result
 }
 
 func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
@@ -61,21 +54,26 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 	err := r.Get(ctx, req.NamespacedName, alluxioCluster)
 	if err != nil {
 		if errors.IsNotFound(err) {
-			logger.Infof("Alluxio cluster %v in namespace %v not found. Ignoring since object must be deleted", req.Name, req.Namespace)
-			return ctrl.Result{}, nil
+			logger.Infof("Alluxio cluster %v in namespace %v not found. It is being deleted or already deleted.", req.Name, req.Namespace)
+		} else {
+			logger.Errorf("Failed to get Alluxio cluster %v in namespace %v: %v", req.Name, req.Namespace, err)
+			return ctrl.Result{}, err
 		}
-		logger.Errorf("Failed to get Alluxio cluster %v in namespace %v: %v", req.Name, req.Namespace, err)
-		return ctrl.Result{}, err
+	}
+
+	if alluxioCluster.ObjectMeta.UID == "" {
+		return DeleteAlluxioClusterIfExist(ctx)
 	}
 
 	if alluxioCluster.Status.Phase == alluxiocomv1alpha1.ClusterPhaseNone {
-		alluxioCluster.Status.Phase = alluxiocomv1alpha1.ClusterPhaseCreating
-		if res := CreateAlluxioCluster(ctx); res.NeedReturn {
-			return res.Result, res.Err
+		err = CreateAlluxioClusterIfNotExist(ctx)
+		if err != nil {
+			return ctrl.Result{}, err
 		}
+		return ctx.UpdateClusterStatus(r)
 	}
 
-	return ctrl.Result{RequeueAfter: 2 * time.Minute}, nil
+	return ctx.UpdateClusterStatus(r)
 }
 
 // SetupWithManager sets up the controller with the Manager.
