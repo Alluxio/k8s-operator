@@ -315,6 +315,53 @@ fuse:
   tolerations: []
   podAnnotations: {}
 
+# CSI (Container Storage Interface) is for launching Alluxio Fuse on demand.
+# Fuse pods launched by CSI use configuration specified in the fuse section above.
+csi:
+  # whether to launch CSI components
+  enabled: false
+  imagePullPolicy: IfNotPresent
+  controllerPlugin:
+    provisioner:
+      image: registry.k8s.io/sig-storage/csi-provisioner:v2.0.5
+      resources:
+        limits:
+          cpu: 100m
+          memory: 300Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+    controller:
+      image: alluxio/csi
+      imageTag: 1.0.0
+      resources:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+  nodePlugin:
+    nodeserver:
+      image: alluxio/csi
+      imageTag: 1.0.0
+      resources:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+    driverRegistrar:
+      image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.0.0
+      resources:
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+
 ##  Metrics System ##
 
 # Settings for Alluxio metrics

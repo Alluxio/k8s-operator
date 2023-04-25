@@ -32,3 +32,7 @@ data:
     {{- include "alluxio.metrics.properties" . | nindent 4 }}
   log4j.properties: |-
     {{ .Files.Get "resources/log4j.properties" | nindent 4 }}
+  {{- if .Values.csi.enabled }}
+  alluxio-csi-fuse.yaml: |-
+    {{- include "alluxio.csi.fuse.yaml" . | nindent 4 }}
+  {{- end }}
