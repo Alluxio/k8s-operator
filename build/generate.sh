@@ -45,7 +45,7 @@ generate_deepcopy_methods_file() {
 generate_crds() {
   local cmd=("${CONTROLLER_GEN}" crd paths="${SCRIPT_DIR}/../..." output:crd:artifacts:config="${SCRIPT_DIR}/../resources/crds")
   "${cmd[@]}"
-  for file in "${SCRIPT_DIR}/../resources/crds/*"; do
+  for file in "${SCRIPT_DIR}"/../resources/crds/*; do
     insert_license_header $file
   done
 }

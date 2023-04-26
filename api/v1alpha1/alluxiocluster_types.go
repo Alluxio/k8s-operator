@@ -39,11 +39,11 @@ type AlluxioClusterSpec struct {
 	HostAliases        []HostAlias       `json:"hostAliases,omitempty" yaml:"hostAliases,omitempty"`
 	NodeSelector       map[string]string `json:"nodeSelector,omitempty" yaml:"nodeSelector,omitempty"`
 	Tolerations        []Toleration      `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
+	Properties         map[string]string `json:"properties,omitempty" yaml:"properties,omitempty"`
 	JvmOptions         []string          `json:"jvmOptions,omitempty" yaml:"jvmOptions,omitempty"`
 	PvcMounts          MountSpec         `json:"pvcMounts,omitempty" yaml:"pvcMounts,omitempty"`
 	ConfigMaps         MountSpec         `json:"configMaps,omitempty" yaml:"configMaps,omitempty"`
 	Secrets            MountSpec         `json:"secrets,omitempty" yaml:"secrets,omitempty"`
-	Dataset            DatasetSpec       `json:"dataset" yaml:"dataset"`
 	Master             MasterSpec        `json:"master,omitempty" yaml:"master,omitempty"`
 	Journal            JournalSpec       `json:"journal,omitempty" yaml:"journal,omitempty"`
 	Worker             WorkerSpec        `json:"worker,omitempty" yaml:"worker,omitempty"`
@@ -71,11 +71,6 @@ type MountSpec struct {
 	Worker map[string]string `json:"worker,omitempty" yaml:"worker,omitempty"`
 	Fuse   map[string]string `json:"fuse,omitempty" yaml:"fuse,omitempty"`
 	Proxy  map[string]string `json:"proxy,omitempty" yaml:"proxy,omitempty"`
-}
-
-type DatasetSpec struct {
-	Path        string            `json:"path" yaml:"path"`
-	Credentials map[string]string `json:"credentials,omitempty" yaml:"credentials,omitempty"`
 }
 
 type MasterSpec struct {

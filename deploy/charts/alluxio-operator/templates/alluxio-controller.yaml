@@ -1,0 +1,52 @@
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+{{- $chart := include "alluxio-operator.chart" . }}
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: alluxio-controller
+  namespace: alluxio-operator
+  labels:
+    name: alluxio-controller
+    app: alluxio-operator
+    chart: {{ $chart }}
+    role: alluxio-controller
+spec:
+  selector:
+    matchLabels:
+      name: alluxio-controller
+      app: alluxio-operator
+      chart: {{ $chart }}
+      role: alluxio-controller
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: alluxio-controller
+        app: alluxio-operator
+        chart: {{ $chart }}
+        role: alluxio-controller
+    spec:
+      serviceAccountName: alluxio-operator-sa
+      containers:
+      - name: alluxio-controller
+        image: {{ .Values.image }}:{{ .Values.imageTag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        command: ["/alluxio-manager", "start"]
+        resources:
+          limits:
+            cpu: 500m
+            memory: 128Mi
+          requests:
+            cpu: 10m
+            memory: 64Mi
