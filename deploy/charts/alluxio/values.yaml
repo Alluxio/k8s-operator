@@ -17,7 +17,7 @@ nameOverride: alluxio
 
 # Docker Image
 image: alluxio/alluxio
-imageTag: 291-gamma
+imageTag: latest
 imagePullPolicy: IfNotPresent
 
 # Image Pull Secrets

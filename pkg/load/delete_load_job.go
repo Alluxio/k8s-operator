@@ -12,10 +12,11 @@
 package load
 
 import (
-	"github.com/alluxio/k8s-operator/pkg/logger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
 func (r *LoadReconciler) deleteJob(ctx LoadReconcilerReqCtx) (ctrl.Result, error) {

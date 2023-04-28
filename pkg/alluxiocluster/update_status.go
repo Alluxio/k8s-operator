@@ -12,14 +12,16 @@
 package alluxiocluster
 
 import (
-	alluxiocomv1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"reflect"
+	"time"
+
+	v1 "k8s.io/api/apps/v1"
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
 	"github.com/alluxio/k8s-operator/pkg/dataset"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 	"github.com/alluxio/k8s-operator/pkg/utils"
-	v1 "k8s.io/api/apps/v1"
-	"reflect"
-	ctrl "sigs.k8s.io/controller-runtime"
-	"time"
 )
 
 type componentStatus struct {
@@ -30,23 +32,23 @@ type componentStatus struct {
 }
 
 func UpdateStatus(r *AlluxioClusterReconciler,
-	alluxioClusterCtx AlluxioClusterReconcileReqCtx, datasetToUpdate *alluxiocomv1alpha1.Dataset) (ctrl.Result, error) {
+	alluxioClusterCtx AlluxioClusterReconcileReqCtx, datasetToUpdate *alluxiov1alpha1.Dataset) (ctrl.Result, error) {
 	alluxioOriginalStatusCopy := alluxioClusterCtx.AlluxioCluster.Status.DeepCopy()
 	datasetOriginalStatusCopy := datasetToUpdate.Status.DeepCopy()
 
 	alluxioClusterNewPhase := alluxioOriginalStatusCopy.Phase
 	datasetNewPhase := datasetToUpdate.Status.Phase
 
-	if alluxioOriginalStatusCopy.Phase == alluxiocomv1alpha1.ClusterPhaseNone {
-		alluxioClusterNewPhase = alluxiocomv1alpha1.ClusterPhaseCreatingOrUpdating
-		datasetNewPhase = alluxiocomv1alpha1.DatasetPhaseBounding
+	if alluxioOriginalStatusCopy.Phase == alluxiov1alpha1.ClusterPhaseNone {
+		alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhaseCreatingOrUpdating
+		datasetNewPhase = alluxiov1alpha1.DatasetPhaseBounding
 	} else {
 		if ClusterReady(r, alluxioClusterCtx) {
-			alluxioClusterNewPhase = alluxiocomv1alpha1.ClusterPhaseReady
-			datasetNewPhase = alluxiocomv1alpha1.DatasetPhaseReady
+			alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhaseReady
+			datasetNewPhase = alluxiov1alpha1.DatasetPhaseReady
 		} else {
-			alluxioClusterNewPhase = alluxiocomv1alpha1.ClusterPhaseCreatingOrUpdating
-			datasetNewPhase = alluxiocomv1alpha1.DatasetPhaseBounding
+			alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhaseCreatingOrUpdating
+			datasetNewPhase = alluxiov1alpha1.DatasetPhaseBounding
 		}
 	}
 	alluxioClusterCtx.AlluxioCluster.Status.Phase = alluxioClusterNewPhase
@@ -64,7 +66,7 @@ func UpdateStatus(r *AlluxioClusterReconciler,
 		}
 	}
 
-	if alluxioClusterNewPhase != alluxiocomv1alpha1.ClusterPhaseReady {
+	if alluxioClusterNewPhase != alluxiov1alpha1.ClusterPhaseReady {
 		return ctrl.Result{RequeueAfter: 15 * time.Second}, nil
 	}
 	return ctrl.Result{RequeueAfter: 2 * time.Minute}, nil

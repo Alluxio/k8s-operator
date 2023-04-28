@@ -12,14 +12,16 @@
 package dataset
 
 import (
-	alluxiocomv1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
-	"github.com/alluxio/k8s-operator/pkg/logger"
 	"reflect"
+
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
 func UpdateDatasetStatus(ctx DatasetReconcilerReqCtx) (ctrl.Result, error) {
-	newestDataset := &alluxiocomv1alpha1.Dataset{}
+	newestDataset := &alluxiov1alpha1.Dataset{}
 	if err := ctx.Get(ctx, ctx.NamespacedName, newestDataset); err != nil {
 		logger.Errorf("Error getting newest dataset status: %v", err)
 		return ctrl.Result{}, err
@@ -27,7 +29,7 @@ func UpdateDatasetStatus(ctx DatasetReconcilerReqCtx) (ctrl.Result, error) {
 	if !reflect.DeepEqual(newestDataset.Status, ctx.Dataset.Status) {
 		newestDataset.Status.Phase = ctx.Dataset.Status.Phase
 		if err := ctx.Client.Status().Update(ctx.Context, newestDataset); err != nil {
-			logger.Errorf("Error updating dataset %v in namespace %v status: %v", ctx.Name, ctx.Namespace, err)
+			logger.Errorf("Error updating dataset %s status: %v", ctx.NamespacedName.String(), err)
 			return ctrl.Result{}, err
 		}
 	}

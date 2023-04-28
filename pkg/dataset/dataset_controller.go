@@ -13,13 +13,15 @@ package dataset
 
 import (
 	"context"
-	alluxiocomv1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
-	"github.com/alluxio/k8s-operator/pkg/logger"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
 // DatasetReconciler reconciles a Dataset object
@@ -29,7 +31,7 @@ type DatasetReconciler struct {
 }
 
 type DatasetReconcilerReqCtx struct {
-	*alluxiocomv1alpha1.Dataset
+	*alluxiov1alpha1.Dataset
 	client.Client
 	context.Context
 	types.NamespacedName
@@ -42,14 +44,14 @@ func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request)
 		NamespacedName: req.NamespacedName,
 	}
 
-	dataset := &alluxiocomv1alpha1.Dataset{}
+	dataset := &alluxiov1alpha1.Dataset{}
 	ctx.Dataset = dataset
 
 	if err := r.Get(context, req.NamespacedName, dataset); err != nil {
 		if errors.IsNotFound(err) {
-			logger.Infof("Data set %v in namespace %v not found. It is being deleted or already deleted.", req.Name, req.Namespace)
+			logger.Infof("Dataset %s not found. It is being deleted or already deleted.", req.NamespacedName.String())
 		} else {
-			logger.Errorf("Failed to get dataset %v in namespace %v: %v", req.Name, req.Namespace, err)
+			logger.Errorf("Failed to get dataset %s: %v", req.NamespacedName.String(), err)
 			return ctrl.Result{}, err
 		}
 	}
@@ -57,8 +59,8 @@ func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request)
 	if dataset.ObjectMeta.UID == "" {
 		return DeleteDatasetIfExist(req)
 	}
-	if dataset.Status.Phase == alluxiocomv1alpha1.DatasetPhaseNone {
-		dataset.Status.Phase = alluxiocomv1alpha1.DatasetPhasePending
+	if dataset.Status.Phase == alluxiov1alpha1.DatasetPhaseNone {
+		dataset.Status.Phase = alluxiov1alpha1.DatasetPhasePending
 		return UpdateDatasetStatus(ctx)
 	}
 	return ctrl.Result{}, nil
@@ -67,6 +69,6 @@ func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request)
 // SetupWithManager sets up the controller with the Manager.
 func (r *DatasetReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&alluxiocomv1alpha1.Dataset{}).
+		For(&alluxiov1alpha1.Dataset{}).
 		Complete(r)
 }

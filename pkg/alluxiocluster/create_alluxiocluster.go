@@ -12,10 +12,12 @@
 package alluxiocluster
 
 import (
+	"os"
+
+	"sigs.k8s.io/yaml"
+
 	"github.com/alluxio/k8s-operator/pkg/logger"
 	"github.com/alluxio/k8s-operator/pkg/utils"
-	"os"
-	"sigs.k8s.io/yaml"
 )
 
 const chartPath = "/opt/alluxio-helm-chart"
@@ -34,7 +36,7 @@ func CreateAlluxioClusterIfNotExist(ctx AlluxioClusterReconcileReqCtx) error {
 		return nil
 	}
 
-	logger.Infof("Creating Alluxio cluster %v in namespace %v.", ctx.Name, ctx.Namespace)
+	logger.Infof("Creating Alluxio cluster %s.", ctx.NamespacedName.String())
 	// Construct config.yaml file
 	clusterYaml, err := yaml.Marshal(ctx.AlluxioCluster.Spec)
 	if err != nil {
@@ -69,7 +71,7 @@ func CreateAlluxioClusterIfNotExist(ctx AlluxioClusterReconcileReqCtx) error {
 	if err := utils.HelmInstall(helmCtx); err != nil {
 		logger.Errorf("error installing helm release. Uninstalling...")
 		if _, err := DeleteAlluxioClusterIfExist(ctx); err != nil {
-			logger.Errorf("failed to delete failed helm release %v in namespace %v: %v", ctx.Name, ctx.Namespace, err)
+			logger.Errorf("failed to delete failed helm release %s: %v", ctx.NamespacedName.String(), err)
 			return err
 		}
 	}

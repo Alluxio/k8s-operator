@@ -12,13 +12,14 @@
 package dataset
 
 import (
-	"github.com/alluxio/k8s-operator/pkg/logger"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
-// TODO: shall we free worker space when called?
+// TODO: shall we free worker space when deleting datatset?
 func DeleteDatasetIfExist(req ctrl.Request) (ctrl.Result, error) {
-	logger.Infof("Uninstalling Dataset %v in namespace %v.", req.Name, req.Namespace)
+	logger.Infof("Uninstalling Dataset %s.", req.NamespacedName.String())
 
 	return ctrl.Result{}, nil
 }

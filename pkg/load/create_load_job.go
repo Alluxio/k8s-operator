@@ -13,21 +13,23 @@ package load
 
 import (
 	"fmt"
-	alluxiocomv1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
-	"github.com/alluxio/k8s-operator/pkg/logger"
-	"github.com/alluxio/k8s-operator/pkg/utils"
+	"os"
+	"time"
+
 	batchv1 "k8s.io/api/batch/v1"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/scheme"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
-	"time"
+
+	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"github.com/alluxio/k8s-operator/pkg/logger"
+	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
 func (r *LoadReconciler) createLoadJob(ctx LoadReconcilerReqCtx) (ctrl.Result, error) {
 	// Update the status before job creation instead of after, because otherwise if the status update fails,
 	// the reconciler will loop again and create another same job, leading to failure to create duplicated job which is confusing.
-	ctx.Load.Status.Phase = alluxiocomv1alpha1.LoadPhaseLoading
+	ctx.Load.Status.Phase = alluxiov1alpha1.LoadPhaseLoading
 	_, err := r.updateLoadStatus(ctx)
 	if err != nil {
 		logger.Infof("Job is pending because status was not updated successfully")
@@ -39,7 +41,7 @@ func (r *LoadReconciler) createLoadJob(ctx LoadReconcilerReqCtx) (ctrl.Result, e
 	}
 	constructLoadJob(ctx.AlluxioCluster, ctx.Load, loadJob)
 	if err := r.Create(ctx.Context, loadJob); err != nil {
-		logger.Errorf("Failed to load data of dataset %s in namespace %s: %v", ctx.Load.Spec.Dataset, ctx.AlluxioCluster.Namespace)
+		logger.Errorf("Failed to load data of dataset %s: %v", ctx.NamespacedName.String(), err)
 		return ctrl.Result{}, err
 	}
 	return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
@@ -58,7 +60,7 @@ func getLoadJobFromYaml() (*batchv1.Job, error) {
 	return loadJob.(*batchv1.Job), nil
 }
 
-func constructLoadJob(alluxio *alluxiocomv1alpha1.AlluxioCluster, load *alluxiocomv1alpha1.Load, loadJob *batchv1.Job) {
+func constructLoadJob(alluxio *alluxiov1alpha1.AlluxioCluster, load *alluxiov1alpha1.Load, loadJob *batchv1.Job) {
 	loadJob.Name = utils.GetLoadJobName(load.Name)
 	loadJob.Namespace = alluxio.Namespace
 	var imagePullSecrets []corev1.LocalObjectReference

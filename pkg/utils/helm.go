@@ -12,8 +12,9 @@
 package utils
 
 import (
-	"github.com/alluxio/k8s-operator/pkg/logger"
 	"os/exec"
+
+	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
 type HelmContext struct {
@@ -26,7 +27,7 @@ type HelmContext struct {
 func HelmInstall(ctx HelmContext) error {
 	args := []string{"install", "-f", ctx.ConfigFilePath, "--namespace", ctx.Namespace, ctx.ReleaseName, ctx.HelmChartPath}
 	if _, err := executeHelmCommand(args); err != nil {
-		logger.Errorf("Error installing Helm release with name %v in namespace %v.", ctx.ReleaseName, ctx.Namespace)
+		logger.Errorf("Error installing Helm release %s.", ctx.ReleaseName, ctx.Namespace)
 		return err
 	}
 	return nil

@@ -13,14 +13,16 @@ package alluxiocluster
 
 import (
 	"context"
-	alluxiocomv1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
-	"github.com/alluxio/k8s-operator/pkg/logger"
+	"time"
+
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"time"
+
+	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
 // AlluxioClusterReconciler reconciles a AlluxioCluster object
@@ -30,28 +32,28 @@ type AlluxioClusterReconciler struct {
 }
 
 type AlluxioClusterReconcileReqCtx struct {
-	*alluxiocomv1alpha1.AlluxioCluster
+	*alluxiov1alpha1.AlluxioCluster
 	client.Client
 	context.Context
-	*alluxiocomv1alpha1.Dataset
+	*alluxiov1alpha1.Dataset
 	types.NamespacedName
 }
 
 func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.Request) (ctrl.Result, error) {
-	logger.Infof("Reconciling AlluxioCluster. Name: %s. Namespace: %s", req.NamespacedName.Name, req.NamespacedName.Namespace)
+	logger.Infof("Reconciling AlluxioCluster %s", req.NamespacedName.String())
 	ctx := AlluxioClusterReconcileReqCtx{
 		Client:         r.Client,
 		Context:        context,
 		NamespacedName: req.NamespacedName,
 	}
 
-	alluxioCluster := &alluxiocomv1alpha1.AlluxioCluster{}
+	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
 	ctx.AlluxioCluster = alluxioCluster
 	if err := r.Get(context, req.NamespacedName, alluxioCluster); err != nil {
 		if errors.IsNotFound(err) {
-			logger.Infof("Alluxio cluster %v in namespace %v not found. It is being deleted or already deleted.", req.Name, req.Namespace)
+			logger.Infof("Alluxio cluster %s not found. It is being deleted or already deleted.", req.NamespacedName.String())
 		} else {
-			logger.Errorf("Failed to get Alluxio cluster %v in namespace %v: %v", req.Name, req.Namespace, err)
+			logger.Errorf("Failed to get Alluxio cluster %s: %v", req.NamespacedName.String(), err)
 			return ctrl.Result{}, err
 		}
 	}
@@ -64,18 +66,18 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 		return DeleteAlluxioClusterIfExist(ctx)
 	}
 
-	datasetToBound := &alluxiocomv1alpha1.Dataset{}
+	datasetToBound := &alluxiov1alpha1.Dataset{}
 	ctx.Dataset = datasetToBound
 	if err := r.Get(context, req.NamespacedName, datasetToBound); err != nil {
 		if errors.IsNotFound(err) {
-			logger.Infof("Dataset %v in namespace %v not found. It is deleted or hasn't been created yet.", req.Name, req.Namespace)
+			logger.Infof("Dataset %s not found. It is deleted or hasn't been created yet.", req.NamespacedName.String())
 			return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
 		} else {
-			logger.Errorf("Failed to get Dataset %v in namespace %s: %s", req.Name, req.Namespace, err)
+			logger.Errorf("Failed to get Dataset %s: %v", req.NamespacedName.String(), err)
 			return ctrl.Result{}, err
 		}
 	}
-	if alluxioCluster.Status.Phase == alluxiocomv1alpha1.ClusterPhaseNone {
+	if alluxioCluster.Status.Phase == alluxiov1alpha1.ClusterPhaseNone {
 		if err := CreateAlluxioClusterIfNotExist(ctx); err != nil {
 			return ctrl.Result{}, err
 		}
@@ -88,6 +90,6 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 // SetupWithManager sets up the controller with the Manager.
 func (r *AlluxioClusterReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return ctrl.NewControllerManagedBy(mgr).
-		For(&alluxiocomv1alpha1.AlluxioCluster{}).
+		For(&alluxiov1alpha1.AlluxioCluster{}).
 		Complete(r)
 }

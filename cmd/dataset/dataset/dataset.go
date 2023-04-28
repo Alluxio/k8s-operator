@@ -17,16 +17,18 @@ limitations under the License.
 package dataset
 
 import (
-	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
-	"github.com/alluxio/k8s-operator/pkg/dataset"
-	"github.com/alluxio/k8s-operator/pkg/load"
-	"github.com/alluxio/k8s-operator/pkg/logger"
+	"os"
+
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
-	"os"
 	ctrl "sigs.k8s.io/controller-runtime"
+
+	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"github.com/alluxio/k8s-operator/pkg/dataset"
+	"github.com/alluxio/k8s-operator/pkg/load"
+	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
 var (

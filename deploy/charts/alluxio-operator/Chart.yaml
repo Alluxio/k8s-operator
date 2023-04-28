@@ -12,7 +12,7 @@
 name: alluxio-operator
 apiVersion: v2
 description: Open source data orchestration for analytics and machine learning in any cloud.
-version: 0.1.0
+version: 1.0.0
 home: https://www.alluxio.io/
 maintainers:
 - name: Shawn Sun

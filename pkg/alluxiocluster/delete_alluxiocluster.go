@@ -12,26 +12,28 @@
 package alluxiocluster
 
 import (
-	alluxiocomv1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
+	"os"
+
+	ctrl "sigs.k8s.io/controller-runtime"
+
+	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 	"github.com/alluxio/k8s-operator/pkg/utils"
-	"os"
-	ctrl "sigs.k8s.io/controller-runtime"
 )
 
 func DeleteAlluxioClusterIfExist(ctx AlluxioClusterReconcileReqCtx) (ctrl.Result, error) {
-	logger.Infof("Uninstalling Alluxio cluster %v in namespace %v.", ctx.Name, ctx.Namespace)
+	logger.Infof("Uninstalling Alluxio cluster %s.", ctx.NamespacedName.String())
 
 	helmCtx := utils.HelmContext{
 		ReleaseName: ctx.Name,
 		Namespace:   ctx.Namespace,
 	}
 	if err := utils.HelmDeleteIfExist(helmCtx); err != nil {
-		logger.Errorf("failed to delete helm release %v in namespace %v: %v", ctx.Name, ctx.Namespace, err)
+		logger.Errorf("failed to delete helm release %s: %v", ctx.NamespacedName.String(), err)
 		return ctrl.Result{}, err
 	}
 
-	ctx.Dataset.Status.Phase = alluxiocomv1alpha1.DatasetPhasePending
+	ctx.Dataset.Status.Phase = alluxiov1alpha1.DatasetPhasePending
 	if err := updateDatasetStatus(ctx); err != nil {
 		return ctrl.Result{}, err
 	}
