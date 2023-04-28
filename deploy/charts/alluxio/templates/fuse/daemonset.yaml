@@ -15,7 +15,7 @@
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
 {{- $hostMountPath := include "alluxio.mount.basePath" "" }}
-{{- $alluxioFuseMountPoint := include "alluxio.mount.basePath" "/fuse"}}
+{{- $alluxioFuseMountPoint := include "alluxio.mount.basePath" "/fuse" }}
 
 apiVersion: apps/v1
 kind: DaemonSet
@@ -118,14 +118,12 @@ spec:
               value: "{{ $value }}"
             {{- end }}
           securityContext:
-            privileged: true
+            privileged: true # required by bidirectional mount
           lifecycle:
             preStop:
               exec:
                 command: ["/opt/alluxio/integration/fuse/bin/alluxio-fuse", "unmount", {{ $alluxioFuseMountPoint }}]
           volumeMounts:
-            - name: alluxio-fuse-device
-              mountPath: /dev/fuse
             - name: alluxio-fuse-mount
               mountPath: {{ $hostMountPath }}
               mountPropagation: Bidirectional
@@ -142,10 +140,6 @@ spec:
             {{- end }}
       restartPolicy: Always
       volumes:
-        - name: alluxio-fuse-device
-          hostPath:
-            path: /dev/fuse
-            type: CharDevice
         - name: alluxio-fuse-mount
           hostPath:
             path: {{ $hostMountPath }}
