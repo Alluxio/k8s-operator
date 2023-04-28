@@ -49,6 +49,14 @@ func GetProxyDaemonSetNamespacedName(nameOverride string, clusterNamespacedName 
 	}
 }
 
+func GetAlluxioConfigMapName(nameOverride, clusterName string) string {
+	return fmt.Sprintf("%s-alluxio-conf", getClusterFullName(nameOverride, clusterName))
+}
+
+func GetLoadJobName(loadName string) string {
+	return fmt.Sprintf("%s-load-job", loadName)
+}
+
 // The same function that constructs alluxio.fullName in helm chart
 func getClusterFullName(nameOverride, helmReleaseName string) string {
 	if nameOverride == "" {

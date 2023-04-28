@@ -15,14 +15,14 @@ metadata:
   annotations:
     controller-gen.kubebuilder.io/version: v0.10.0
   creationTimestamp: null
-  name: datasets.k8s-operator.alluxio.com
+  name: loads.k8s-operator.alluxio.com
 spec:
   group: k8s-operator.alluxio.com
   names:
-    kind: Dataset
-    listKind: DatasetList
-    plural: datasets
-    singular: dataset
+    kind: Load
+    listKind: LoadList
+    plural: loads
+    singular: load
   scope: Namespaced
   versions:
   - additionalPrinterColumns:
@@ -32,7 +32,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Dataset is the Schema for the datasets API
+        description: Load is the Schema for the loads API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation
@@ -49,21 +49,15 @@ spec:
           spec:
             properties:
               dataset:
-                properties:
-                  credentials:
-                    additionalProperties:
-                      type: string
-                    type: object
-                  path:
-                    type: string
-                required:
-                - credentials
-                - path
-                type: object
+                type: string
+              path:
+                type: string
             required:
             - dataset
+            - path
             type: object
           status:
+            description: LoadStatus defines the observed state of Load
             properties:
               phase:
                 type: string

@@ -32,7 +32,7 @@ spec:
     name: v1alpha1
     schema:
       openAPIV3Schema:
-        description: Datatset is the Schema for the datasets API
+        description: Dataset is the Schema for the datasets API
         properties:
           apiVersion:
             description: 'APIVersion defines the versioned schema of this representation

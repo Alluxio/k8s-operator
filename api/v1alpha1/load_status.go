@@ -11,15 +11,17 @@
 
 package v1alpha1
 
-type DatasetPhase string
+type LoadPhase string
 
 const (
-	DatasetPhaseNone     DatasetPhase = ""
-	DatasetPhasePending  DatasetPhase = "Pending"
-	DatasetPhaseBounding DatasetPhase = "Bounding"
-	DatasetPhaseReady    DatasetPhase = "Ready"
+	LoadPhaseNone    LoadPhase = ""
+	LoadPhaseWaiting LoadPhase = "Waiting for data to be ready"
+	LoadPhaseLoading LoadPhase = "Loading"
+	LoadPhaseLoaded  LoadPhase = "Loaded"
+	LoadPhaseFailed  LoadPhase = "Failed"
 )
 
-type DatasetStatus struct {
-	Phase DatasetPhase `json:"phase"`
+// LoadStatus defines the observed state of Load
+type LoadStatus struct {
+	Phase LoadPhase `json:"phase"`
 }

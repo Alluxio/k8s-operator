@@ -19,6 +19,7 @@ package dataset
 import (
 	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
 	"github.com/alluxio/k8s-operator/pkg/dataset"
+	"github.com/alluxio/k8s-operator/pkg/load"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 	"github.com/spf13/cobra"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -61,6 +62,14 @@ func startDatasetManager() {
 		Scheme: manager.GetScheme(),
 	}).SetupWithManager(manager); err != nil {
 		logger.Fatalf("unable to create Dataset controller: %v", err)
+		os.Exit(1)
+	}
+
+	if err = (&load.LoadReconciler{
+		Client: manager.GetClient(),
+		Scheme: manager.GetScheme(),
+	}).SetupWithManager(manager); err != nil {
+		logger.Fatalf("unable to create Load controller: %v", err)
 		os.Exit(1)
 	}
 

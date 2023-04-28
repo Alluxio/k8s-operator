@@ -25,4 +25,13 @@ resources:
   kind: Dataset
   path: github.com/alluxio/k8s-operator/api/v1alpha1
   version: v1alpha1
+- api:
+    crdVersion: v1
+    namespaced: true
+  controller: true
+  domain: alluxio.com
+  group: k8s-operator
+  kind: Load
+  path: github.com/alluxio/k8s-operator/api/v1alpha1
+  version: v1alpha1
 version: "3"

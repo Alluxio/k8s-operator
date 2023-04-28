@@ -31,7 +31,7 @@ type DatasetConf struct {
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="DatasetPhase",type="string",JSONPath=`.status.phase`,priority=0
 
-// Datatset is the Schema for the datasets API
+// Dataset is the Schema for the datasets API
 type Dataset struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata,omitempty"`
@@ -42,7 +42,7 @@ type Dataset struct {
 
 // +kubebuilder:object:root=true
 
-// DatasetList contains a list of Dataset
+// DatasetList contains a list of Dataset. Operator wouldn't work without this list.
 type DatasetList struct {
 	metav1.TypeMeta `json:",inline"`
 	metav1.ListMeta `json:"metadata,omitempty"`

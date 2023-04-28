@@ -49,7 +49,7 @@ func (r *DatasetReconciler) Reconcile(context context.Context, req ctrl.Request)
 		if errors.IsNotFound(err) {
 			logger.Infof("Data set %v in namespace %v not found. It is being deleted or already deleted.", req.Name, req.Namespace)
 		} else {
-			logger.Errorf("Failed to get data set %v in namespace %v: %v", req.Name, req.Namespace, err)
+			logger.Errorf("Failed to get dataset %v in namespace %v: %v", req.Name, req.Namespace, err)
 			return ctrl.Result{}, err
 		}
 	}
