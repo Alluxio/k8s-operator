@@ -1033,11 +1033,15 @@ spec:
                 type: string
               journal:
                 properties:
+                  hostPath:
+                    type: string
                   runFormat:
                     type: boolean
                   size:
                     type: string
                   storageClass:
+                    type: string
+                  type:
                     type: string
                 type: object
               jvmOptions:

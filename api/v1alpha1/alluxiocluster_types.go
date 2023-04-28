@@ -85,9 +85,11 @@ type MasterSpec struct {
 }
 
 type JournalSpec struct {
+	HostPath     string `json:"hostPath,omitempty" yaml:"hostPath,omitempty"`
 	RunFormat    bool   `json:"runFormat,omitempty" yaml:"runFormat,omitempty"`
 	Size         string `json:"size,omitempty" yaml:"size,omitempty"`
 	StorageClass string `json:"storageClass,omitempty" yaml:"storageClass,omitempty"`
+	Type         string `json:"type,omitempty" yaml:"type,omitempty"`
 }
 
 type WorkerSpec struct {
