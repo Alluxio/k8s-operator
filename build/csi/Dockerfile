@@ -9,17 +9,21 @@
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
 
-name: alluxio
-apiVersion: v2
-description: Open source data orchestration for analytics and machine learning in any cloud.
-version: 1.0.0
-home: https://www.alluxio.io/
-maintainers:
-- name: Adit Madan
-  email: adit@alluxio.com
-- name: Jiacheng Liu
-  email: jiacheng@alluxio.com
-- name: Shawn Sun
-  email: shawn.sun@alluxio.com
-- name: Yang Che
-  email: cheyang@163.com
+FROM golang:1.19-alpine3.17 AS csi-dev
+
+ENV GO111MODULE=on
+RUN mkdir -p /alluxio-csi
+COPY ../../csi /alluxio-csi
+RUN cd /alluxio-csi && \
+    CGO_ENABLED=0 go build -o /usr/local/bin/alluxio-csi
+
+FROM alpine:3.17 AS final
+
+RUN addgroup -g 1001 alluxio && \
+    adduser -u 1001 -G alluxio alluxio -D
+
+COPY --chown=1001:1001 --from=csi-dev /usr/local/bin/alluxio-csi /usr/local/bin/
+
+USER 1001
+
+ENTRYPOINT ["/usr/local/bin/alluxio-csi"]
