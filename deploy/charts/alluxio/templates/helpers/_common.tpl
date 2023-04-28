@@ -9,11 +9,8 @@ See the NOTICE file distributed with this work for information regarding copyrig
 
 {{/* vim: set filetype=mustache: */}}
 
-{{/*
-Expand the name of the chart.
-*/}}
 {{- define "alluxio.name" -}}
-{{- default .Chart.Name .Values.nameOverride | trunc 63 | trimSuffix "-" }}
+alluxio
 {{- end }}
 
 {{/*
@@ -22,15 +19,11 @@ We truncate at 32 chars because some Kubernetes name fields are limited to 63 ch
 If release name contains chart name it will be used as a full name.
 */}}
 {{- define "alluxio.fullname" -}}
-{{- if .Values.fullnameOverride }}
-{{- .Values.fullnameOverride | trunc 32 | trimSuffix "-" }}
-{{- else }}
-{{- $name := default .Chart.Name .Values.nameOverride }}
+{{- $name := default .Chart.Name "alluxio" }}
 {{- if contains $name .Release.Name }}
 {{- .Release.Name | trunc 32 | trimSuffix "-" }}
 {{- else }}
 {{- printf "%s-%s" .Release.Name $name | trunc 32 | trimSuffix "-" }}
-{{- end }}
 {{- end }}
 {{- end }}
 

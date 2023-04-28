@@ -9,10 +9,6 @@
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
 
-# The following value should not be modified in the usual case.
-nameOverride: alluxio
-
-
 ## Common ##
 
 # Docker Image
