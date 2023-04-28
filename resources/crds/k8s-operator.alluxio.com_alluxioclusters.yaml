@@ -71,6 +71,111 @@ spec:
                       type: string
                     type: object
                 type: object
+              csi:
+                properties:
+                  controllerPlugin:
+                    properties:
+                      controller:
+                        properties:
+                          image:
+                            type: string
+                          imageTag:
+                            type: string
+                          resources:
+                            properties:
+                              limits:
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                                type: object
+                              requests:
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                                type: object
+                            type: object
+                        type: object
+                      provisioner:
+                        properties:
+                          image:
+                            type: string
+                          resources:
+                            properties:
+                              limits:
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                                type: object
+                              requests:
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                                type: object
+                            type: object
+                        type: object
+                    type: object
+                  enabled:
+                    type: boolean
+                  imagePullPolicy:
+                    type: string
+                  nodePlugin:
+                    properties:
+                      driverRegistrar:
+                        properties:
+                          image:
+                            type: string
+                          resources:
+                            properties:
+                              limits:
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                                type: object
+                              requests:
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                                type: object
+                            type: object
+                        type: object
+                      nodeserver:
+                        properties:
+                          image:
+                            type: string
+                          imageTag:
+                            type: string
+                          resources:
+                            properties:
+                              limits:
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                                type: object
+                              requests:
+                                properties:
+                                  cpu:
+                                    type: string
+                                  memory:
+                                    type: string
+                                type: object
+                            type: object
+                        type: object
+                    type: object
+                type: object
               dnsPolicy:
                 type: string
               fsGroup:
