@@ -333,7 +333,7 @@ csi:
           memory: 20Mi
     controller:
       image: alluxio/csi
-      imageTag: 1.0.0
+      imageTag: latest
       resources:
         limits:
           cpu: 200m
@@ -344,7 +344,7 @@ csi:
   nodePlugin:
     nodeserver:
       image: alluxio/csi
-      imageTag: 1.0.0
+      imageTag: latest
       resources:
         limits:
           cpu: 200m
