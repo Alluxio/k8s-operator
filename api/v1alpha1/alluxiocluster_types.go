@@ -21,6 +21,7 @@ import (
 // AlluxioClusterSpec defines the desired state of AlluxioCluster
 type AlluxioClusterSpec struct {
 	NameOverride       string            `json:"nameOverride,omitempty" yaml:"nemOverride,omitempty"`
+	Dataset            string            `json:"dataset" yaml:dataset`
 	Image              string            `json:"image,omitempty" yaml:"image,omitempty"`
 	ImageTag           string            `json:"imageTag,omitempty" yaml:"imageTag,omitempty"`
 	ImagePullPolicy    string            `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`

@@ -58,17 +58,13 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 		}
 	}
 
-	if alluxioCluster.ObjectMeta.UID == "" {
-		if err := deleteConfYamlFile(ctx); err != nil {
-			logger.Infof("Failed to delete configuration yaml file. You may need to manually delete it to avoid unexpected behavior. %v", err)
-			return ctrl.Result{}, err
-		}
-		return DeleteAlluxioClusterIfExist(ctx)
+	dataset := &alluxiov1alpha1.Dataset{}
+	datasetNamespacedName := types.NamespacedName{
+		Name:      alluxioCluster.Spec.Dataset,
+		Namespace: req.Namespace,
 	}
-
-	datasetToBound := &alluxiov1alpha1.Dataset{}
-	ctx.Dataset = datasetToBound
-	if err := r.Get(context, req.NamespacedName, datasetToBound); err != nil {
+	ctx.Dataset = dataset
+	if err := r.Get(context, datasetNamespacedName, dataset); err != nil {
 		if errors.IsNotFound(err) {
 			logger.Infof("Dataset %s not found. It is deleted or hasn't been created yet.", req.NamespacedName.String())
 			return ctrl.Result{RequeueAfter: 30 * time.Second}, nil
@@ -77,14 +73,32 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 			return ctrl.Result{}, err
 		}
 	}
+
+	if alluxioCluster.DeletionTimestamp != nil {
+		if err := deleteConfYamlFile(ctx); err != nil {
+			logger.Infof("Failed to delete configuration yaml file. You may need to manually delete it to avoid unexpected behavior. %v", err)
+			return ctrl.Result{}, err
+		}
+		if _, err := DeleteAlluxioClusterIfExist(ctx); err != nil {
+			return ctrl.Result{}, err
+		}
+		if err := removeDummyFinalizerIfExist(r, ctx); err != nil {
+			return ctrl.Result{}, err
+		}
+		return ctrl.Result{}, nil
+	}
+
 	if alluxioCluster.Status.Phase == alluxiov1alpha1.ClusterPhaseNone {
+		if err := addDummyFinalizerIfNotExist(r, ctx); err != nil {
+			return ctrl.Result{}, err
+		}
 		if err := CreateAlluxioClusterIfNotExist(ctx); err != nil {
 			return ctrl.Result{}, err
 		}
-		return UpdateStatus(r, ctx, datasetToBound)
+		return UpdateStatus(r, ctx, dataset)
 	}
 
-	return UpdateStatus(r, ctx, datasetToBound)
+	return UpdateStatus(r, ctx, dataset)
 }
 
 // SetupWithManager sets up the controller with the Manager.

@@ -176,6 +176,8 @@ spec:
                         type: object
                     type: object
                 type: object
+              dataset:
+                type: string
               dnsPolicy:
                 type: string
               fsGroup:
@@ -4178,6 +4180,8 @@ spec:
                       type: object
                     type: array
                 type: object
+            required:
+            - dataset
             type: object
           status:
             description: AlluxioClusterStatus defines the observed state of AlluxioCluster

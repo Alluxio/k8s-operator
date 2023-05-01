@@ -16,6 +16,7 @@ import (
 	"time"
 
 	v1 "k8s.io/api/apps/v1"
+	"k8s.io/apimachinery/pkg/types"
 	ctrl "sigs.k8s.io/controller-runtime"
 
 	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
@@ -134,10 +135,13 @@ func GetProxyStatus(r *AlluxioClusterReconciler, ctx AlluxioClusterReconcileReqC
 
 func updateDatasetStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) error {
 	datasetCtx := dataset.DatasetReconcilerReqCtx{
-		Dataset:        alluxioClusterCtx.Dataset,
-		Client:         alluxioClusterCtx.Client,
-		Context:        alluxioClusterCtx.Context,
-		NamespacedName: alluxioClusterCtx.NamespacedName,
+		Dataset: alluxioClusterCtx.Dataset,
+		Client:  alluxioClusterCtx.Client,
+		Context: alluxioClusterCtx.Context,
+		NamespacedName: types.NamespacedName{
+			Name:      alluxioClusterCtx.Dataset.Name,
+			Namespace: alluxioClusterCtx.Namespace,
+		},
 	}
 	if _, err := dataset.UpdateDatasetStatus(datasetCtx); err != nil {
 		return err
