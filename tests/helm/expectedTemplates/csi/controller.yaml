@@ -1,5 +1,99 @@
 ---
 # Source: alluxio/templates/csi/controller.yaml
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: RELEASE-NAME-alluxio-csi-controller
+  labels:
+    name: RELEASE-NAME-alluxio-csi-controller
+    app: alluxio
+    chart: alluxio-1.0.0
+    release: RELEASE-NAME
+    heritage: Helm
+    role: alluxio-csi-controller
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: alluxio
+      role: alluxio-csi-controller
+      name: RELEASE-NAME-alluxio-csi-controller
+  template:
+    metadata:
+      labels:
+        name: RELEASE-NAME-alluxio-csi-controller
+        app: alluxio
+        chart: alluxio-1.0.0
+        release: RELEASE-NAME
+        heritage: Helm
+        role: alluxio-csi-controller
+    spec:
+      serviceAccountName: csi-controller-sa
+      hostNetwork: false
+      dnsPolicy: dummyDnsPolicy
+      imagePullSecrets:
+        - name: dummySecret1
+        - name: dummySecret2
+      securityContext:
+        runAsUser: 1001
+        runAsGroup: 1001
+        fsGroup: 1001
+      containers:
+        - name: csi-provisioner
+          image: registry.k8s.io/sig-storage/csi-provisioner:v2.0.5
+          args:
+            - "--v=5"
+            - "--csi-address=$(ADDRESS)"
+            - "--timeout=60s"
+            - "--volume-name-prefix=alluxio"
+          env:
+            - name: ADDRESS
+              value: /csi/csi.sock
+          volumeMounts:
+            - mountPath: /csi
+              name: socket-dir
+          resources:
+            limits:
+              cpu: 100m
+              memory: 300Mi
+            requests:
+              cpu: 10m
+              memory: 20Mi
+        - name: csi-controller
+          image: dummy/dummy:dummyTag
+          imagePullPolicy: IfNotPresent
+          command: ["/usr/local/bin/alluxio-csi"]
+          args:
+            - --v=5
+            - "--nodeid=$(NODE_ID)"
+            - "--endpoint=$(CSI_ENDPOINT)"
+          env:
+            - name: NODE_ID
+              valueFrom:
+                fieldRef:
+                  fieldPath: spec.nodeName
+            - name: CSI_ENDPOINT
+              value: unix://csi/csi.sock
+          volumeMounts:
+            - mountPath: /csi
+              name: socket-dir
+            - name: RELEASE-NAME-alluxio-alluxio-conf
+              mountPath: /opt/alluxio/conf
+          resources:
+            limits:
+              cpu: 200m
+              memory: 200Mi
+            requests:
+              cpu: 10m
+              memory: 20Mi
+      volumes:
+        - name: socket-dir
+          emptyDir: {}
+        - name: RELEASE-NAME-alluxio-alluxio-conf
+          configMap:
+            name: RELEASE-NAME-alluxio-alluxio-conf
+---
+# Source: alluxio/templates/csi/controller.yaml
 #
 # The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
 # (the "License"). You may not use this work except in compliance with the License, which is

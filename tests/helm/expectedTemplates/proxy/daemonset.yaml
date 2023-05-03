@@ -62,7 +62,8 @@ spec:
         proxyNodeSelectorKey2: proxyNodeSelectorVal2
         globalNodeSelectorKey1: globalNodeSelectorVal1
         globalNodeSelectorKey2: globalNodeSelectorVal2
-      affinity:        nodeAffinity:
+      affinity:
+        nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - preference:
               matchExpressions:
