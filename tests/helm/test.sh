@@ -7,14 +7,19 @@ TARGET_DIR="${SCRIPT_DIR}/resultTemplates"
 function main {
   mkdir -p "${TARGET_DIR}"
 
+  local return_code=0
   verifyMasterTemplate
+  return_code=$((return_code || $?))
   verifyWorkerTemplate
+  return_code=$((return_code || $?))
   verifyFuseTemplate
+  return_code=$((return_code || $?))
   verifyProxyTemplate
+  return_code=$((return_code || $?))
   verifyConfTemplate
+  return_code=$((return_code || $?))
   verifyCsiTemplate
-
-  exit 0
+  exit $((return_code || $?))
 }
 
 function verifyMasterTemplate {
@@ -24,14 +29,14 @@ function verifyMasterTemplate {
   cmp --silent "${TARGET_DIR}/${statefulset_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${statefulset_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio Master StatefulSet template is not rendered as expected."
-    exit 1
+    return 1
   fi
   local service_relative_path="master/service.yaml"
   helm template "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${service_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${service_relative_path}"
   cmp --silent "${TARGET_DIR}/${service_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${service_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio Master service template is not rendered as expected."
-    exit 1
+    return 1
   fi
 }
 
@@ -42,21 +47,21 @@ function verifyWorkerTemplate {
   cmp --silent "${TARGET_DIR}/${deployment_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${deployment_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio Worker Deployment template is not rendered as expected."
-    exit 1
+    return 1
   fi
   local pageStorePvc_relative_path="worker/pageStore-pvc.yaml"
   helm template "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${pageStorePvc_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${pageStorePvc_relative_path}"
   cmp --silent "${TARGET_DIR}/${pageStorePvc_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${pageStorePvc_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio Worker page store PVC template is not rendered as expected."
-    exit 1
+    return 1
   fi
   local metastorePvc_relative_path="worker/metastore-pvc.yaml"
   helm template "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${metastorePvc_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${metastorePvc_relative_path}"
   cmp --silent "${TARGET_DIR}/${metastorePvc_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${metastorePvc_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio Worker metastore PVC template is not rendered as expected."
-    exit 1
+    return 1
   fi
 }
 
@@ -67,7 +72,7 @@ function verifyFuseTemplate {
   cmp --silent "${TARGET_DIR}/${daemonset_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${daemonset_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio Fuse DaemonSet template is not rendered as expected."
-    exit 1
+    return 1
   fi
 }
 
@@ -78,7 +83,7 @@ function verifyProxyTemplate {
   cmp --silent "${TARGET_DIR}/${daemonset_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${daemonset_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio Proxy DaemonSet template is not rendered as expected."
-    exit 1
+    return 1
   fi
 }
 
@@ -89,7 +94,7 @@ function verifyConfTemplate {
   cmp --silent "${TARGET_DIR}/${configmap_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${configmap_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio Conf dir configmap template is not rendered as expected."
-    exit 1
+    return 1
   fi
 }
 
@@ -100,28 +105,28 @@ function verifyCsiTemplate {
   cmp --silent "${TARGET_DIR}/${controller_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${controller_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio csi controller template is not rendered as expected."
-    exit 1
+    return 1
   fi
   local rbac_relative_path="csi/controller-rbac.yaml"
   helm template "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${controller_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${controller_relative_path}"
   cmp --silent "${TARGET_DIR}/${controller_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${controller_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio csi rbac template is not rendered as expected."
-    exit 1
+    return 1
   fi
   local driver_relative_path="csi/driver.yaml"
   helm template "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${driver_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${driver_relative_path}"
   cmp --silent "${TARGET_DIR}/${driver_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${driver_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio csi driver template is not rendered as expected."
-    exit 1
+    return 1
   fi
   local nodeplugin_relative_path="csi/nodeplugin.yaml"
   helm template "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${nodeplugin_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${nodeplugin_relative_path}"
   cmp --silent "${TARGET_DIR}/${nodeplugin_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${nodeplugin_relative_path}"
   if [[ $? -ne 0 ]]; then
     echo "Alluxio csi nodeplugin template is not rendered as expected."
-    exit 1
+    return 1
   fi
 }
 
