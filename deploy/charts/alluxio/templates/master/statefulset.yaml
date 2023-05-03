@@ -68,7 +68,7 @@ spec:
       {{- end }}
       affinity:
       {{- if .Values.master.affinity }}
-{{- toYaml .Values.master.affinity | indent 8 }}
+{{- toYaml .Values.master.affinity | nindent 8 }}
       {{- end }}
       tolerations:
       {{- if .Values.master.tolerations }}

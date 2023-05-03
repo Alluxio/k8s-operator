@@ -62,7 +62,7 @@ spec:
       {{- end }}
       affinity:
       {{- if .Values.fuse.affinity }}
-{{- toYaml .Values.fuse.affinity | indent 8 }}
+{{- toYaml .Values.fuse.affinity | nindent 8 }}
       {{- end }}
       tolerations:
       {{- if .Values.fuse.tolerations }}

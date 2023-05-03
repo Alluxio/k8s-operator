@@ -1,5 +1,4 @@
 ---
----
 # Source: alluxio/templates/fuse/daemonset.yaml
 #
 # The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
@@ -53,7 +52,8 @@ spec:
         fuseNodeSelectorKey2: fuseNodeSelectorVal2
         globalNodeSelectorKey1: globalNodeSelectorVal1
         globalNodeSelectorKey2: globalNodeSelectorVal2
-      affinity:        nodeAffinity:
+      affinity:
+        nodeAffinity:
           preferredDuringSchedulingIgnoredDuringExecution:
           - preference:
               matchExpressions:
