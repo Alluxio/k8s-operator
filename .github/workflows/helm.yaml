@@ -22,3 +22,6 @@ jobs:
           name: result templates
           path: tests/helm/resultTemplates
           retention-days: 7
+
+      - name: Download result templates
+        uses: actions/download-artifact@v3
