@@ -10,5 +10,6 @@ jobs:
       - name: checkout repo
         uses: actions/checkout@v3
 
-      - name: dummy step
-        run: echo "dummy github action"
+      - name: Run Helm Chart sanity check
+        run: tests/helm/test.sh
+        timeout-minutes: 5
