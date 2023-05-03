@@ -1,0 +1,224 @@
+---
+# Source: alluxio/templates/master/statefulset.yaml
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: RELEASE-NAME-alluxio-master
+  labels:
+    name: RELEASE-NAME-alluxio-master
+    app: alluxio
+    chart: alluxio-1.0.0
+    release: RELEASE-NAME
+    heritage: Helm
+    role: alluxio-master
+spec:
+  selector:
+    matchLabels:
+      app: alluxio
+      role: alluxio-master
+      name: RELEASE-NAME-alluxio-master
+  serviceName: RELEASE-NAME-alluxio-master
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        name: RELEASE-NAME-alluxio-master
+        app: alluxio
+        chart: alluxio-1.0.0
+        release: RELEASE-NAME
+        heritage: Helm
+        role: alluxio-master
+      annotations:
+        masterAnnotationKey1: masterAnnotationVal1
+        masterAnnotationKey2: masterAnnotationVal2
+        dummyPrometheusKey1: dummyVal1
+        dummyPrometheusKey2: dummyVal2
+    spec:
+      hostAliases:
+        - ip: 0.0.0.0
+          hostnames:
+            - example00.com
+            - example01.com
+        - ip: 0.0.0.1
+          hostnames:
+            - example10.com
+            - example11.com
+      hostNetwork: false
+      dnsPolicy: dummyDnsPolicy
+      nodeSelector:
+        masterNodeSelectorKey1: masterNodeSelectorVal1
+        masterNodeSelectorKey2: masterNodeSelectorVal2
+        globalNodeSelectorKey1: globalNodeSelectorVal1
+        globalNodeSelectorKey2: globalNodeSelectorVal2
+      affinity:        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: dummyMasterAffinityKey2
+                operator: In
+                values:
+                - dummyMasterAffinityVal3
+            weight: 1
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: dummyMasterAffinityKey1
+                operator: In
+                values:
+                - dummyMasterAffinityVal1
+                - dummyMasterAffinityVal2
+      tolerations:
+        - effect: NoSchedule
+          key: MasterTolerationsKey0
+          operator: Equal
+          value: MasterTolerationsVal0
+        - effect: NoExecute
+          key: MasterTolerationsKey1
+          operator: Exists
+          value: MasterTolerationsVal1
+        - effect: NoSchedule
+          key: globalTolerationsKey0
+          operator: Equal
+          value: globalTolerationsVal0
+        - effect: NoExecute
+          key: globalTolerationsKey1
+          operator: Exists
+          value: globalTolerationsVal1
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      serviceAccountName: dummyServiceAccountName
+      imagePullSecrets:
+        - name: dummySecret1
+        - name: dummySecret2
+      initContainers:
+      - name: journal-dir-permission
+        image: dummy/dummy:dummy
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        command: ["chown", "-R"]
+        args:
+          - 1000:1000
+          - /mnt/alluxio/journal
+        volumeMounts:
+          - name: RELEASE-NAME-alluxio-journal-volume
+            mountPath: /mnt/alluxio/journal
+      containers:
+        - name: alluxio-master
+          image: dummy/dummy:dummy
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 4
+              memory: 8Gi
+            requests:
+              cpu: 1
+              memory: 1Gi
+          command: ["tini", "--", "/entrypoint.sh"]
+          args:
+            - master-only
+            - --no-format
+          env:
+            - name: ALLUXIO_MASTER_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+            - name: "masterEnvKey1"
+              value: "masterEnvVal1"
+            - name: "masterEnvKey2"
+              value: "masterEnvVal2"
+          readinessProbe:
+            tcpSocket:
+              port: embedded
+            initialDelaySeconds: 11
+            periodSeconds: 11
+            timeoutSeconds: 2
+            failureThreshold: 4
+            successThreshold: 2
+          livenessProbe:
+            tcpSocket:
+              port: embedded
+            initialDelaySeconds: 16
+            periodSeconds: 31
+            timeoutSeconds: 6
+            failureThreshold: 2
+          startupProbe:
+            tcpSocket:
+              port: embedded
+            initialDelaySeconds: 16
+            periodSeconds: 31
+            timeoutSeconds: 6
+            failureThreshold: 3
+          ports:
+          - containerPort: 19996
+            name: rpc
+          - containerPort: 19997
+            name: web
+          - containerPort: 19201
+            name: embedded
+          volumeMounts:
+            - name: RELEASE-NAME-alluxio-alluxio-conf
+              mountPath: /opt/alluxio/conf
+            - name: RELEASE-NAME-alluxio-journal-volume
+              mountPath: /mnt/alluxio/journal            
+            - name: dummySecretMaster1-volume
+              mountPath: /dummyPath1
+              readOnly: true
+            - name: dummySecretMaster2-volume
+              mountPath: /dummyPath2
+              readOnly: true            
+            - name: dummyConfigMapMaster1-volume
+              mountPath: /dummyPath1
+              readOnly: true
+            - name: dummyConfigMapMaster2-volume
+              mountPath: /dummyPath2
+              readOnly: true            
+            - name: dummyPvcMaster1-volume
+              mountPath: /dummyPath1
+              readOnly: false
+            - name: dummyPvcMaster2-volume
+              mountPath: /dummyPath2
+              readOnly: false
+      restartPolicy: Always
+      volumes:
+        - name: RELEASE-NAME-alluxio-alluxio-conf
+          configMap:
+            name: RELEASE-NAME-alluxio-alluxio-conf        
+        - name: dummySecretMaster1-volume
+          secret:
+            secretName: dummySecretMaster1
+            defaultMode: 256
+        - name: dummySecretMaster2-volume
+          secret:
+            secretName: dummySecretMaster2
+            defaultMode: 256        
+        - name: dummyConfigMapMaster1-volume
+          configMap:
+            name: dummyConfigMapMaster1
+        - name: dummyConfigMapMaster2-volume
+          configMap:
+            name: dummyConfigMapMaster2        
+        - name: dummyPvcMaster1-volume
+          persistentVolumeClaim:
+            claimName: dummyPvcMaster1
+        - name: dummyPvcMaster2-volume
+          persistentVolumeClaim:
+            claimName: dummyPvcMaster2
+        - name: RELEASE-NAME-alluxio-journal-volume
+          hostPath:
+            path: /mnt/alluxio/journal
+            type: DirectoryOrCreate

@@ -1,0 +1,622 @@
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+# The following value should not be modified in the usual case.
+nameOverride: alluxio
+
+
+## Common ##
+
+# Docker Image
+image: dummy/dummy
+imageTag: dummy
+imagePullPolicy: IfNotPresent
+
+# Image Pull Secrets
+# A list of name of the secrets for the pods to pull images if needed.
+# The secrets need to be created externally from this Helm chart. Format:
+# imagePullSecrets:
+#   - ecr
+#   - dev
+imagePullSecrets:
+  - dummySecret1
+  - dummySecret2
+
+# Security Context
+user: 1000
+group: 1000
+fsGroup: 1000
+
+# Whether using hostNetwork for all Alluxio pods
+hostNetwork: false
+
+# If hostNetwork is false, dnsPolicy defaults to ClusterFirst.
+# If hostNetwork is true, dnsPolicy defaults to ClusterFirstWithHostNet.
+# Use this property to override the default value.
+dnsPolicy: dummyDnsPolicy
+
+# Service Account
+# If not specified, 'default' ServiceAccount of the namespace shall be used for all Alluxio pods
+serviceAccountName: dummyServiceAccountName
+
+# HostAliases is an optional list of hostnames and IPs that will be injected into all pods,
+# for providing the mapping between hostnames and IPs of services not in the K8s cluster, like HDFS.
+# Example:
+# hostAliases:
+#   - ip: "192.168.0.1"
+#     hostnames:
+#       - "example1.com"
+#       - "example2.com"
+hostAliases:
+  - ip: "0.0.0.0"
+    hostnames:
+      - "example00.com"
+      - "example01.com"
+  - ip: "0.0.0.1"
+    hostnames:
+      - "example10.com"
+      - "example11.com"
+
+# Use labels to run Alluxio on a subset of the K8s nodes. Format:
+# nodeSelector:
+#   <lable key1>: <label value1>
+#   <label key2>: <label value2>
+nodeSelector:
+  globalNodeSelectorKey1: globalNodeSelectorVal1
+  globalNodeSelectorKey2: globalNodeSelectorVal2
+
+# A list of K8s Node taints to allow scheduling on. Format:
+# tolerations:
+#   - key: <key>
+#     operator: ["Equal" | "Exists"]
+#     value: <value>
+#     effect: ["NoSchedule" | "NoExecute" | "PreferNoSchedule"]
+tolerations:
+  - key: globalTolerationsKey0
+    operator: "Equal"
+    value: globalTolerationsVal0
+    effect: NoSchedule
+  - key: globalTolerationsKey1
+    operator: "Exists"
+    value: globalTolerationsVal1
+    effect: NoExecute
+
+# Site properties for all Alluxio components
+properties:
+  alluxio.dummyProperty0: dummy
+  alluxio.dummyProperty1: dummy
+
+# JVM options common to all Alluxio components
+jvmOptions:
+  - globalJvmOption0
+  - globalJvmOption1
+
+
+## Mounts ##
+
+# Mount Persistent Volume Claims, ConfigMaps, and Secrets into different Alluxio components.
+# Format:
+# [pvcMounts | configMaps | secrets]:
+#  master: # Mounted into Alluxio master container(s)
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#  worker: # Mounted into Alluxio worker container(s)
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#  fuse: # Mounted into Alluxio fuse container(s)
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
+#  proxy: # Mounted into Alluxio proxy container(s)
+#    <name of PVC/ConfigMap/Secret>: <mountPath>
+pvcMounts:
+  master:
+    dummyPvcMaster1: /dummyPath1
+    dummyPvcMaster2: /dummyPath2
+  worker:
+    dummyPvcWorker1: /dummyPath1
+    dummyPvcWorker2: /dummyPath2
+  fuse:
+    dummyPvcFuse1: /dummyPath1
+    dummyPvcFuse2: /dummyPath2
+  proxy:
+    dummyPvcProxy1: /dummyPath1
+    dummyPvcProxy2: /dummyPath2
+
+configMaps:
+  master:
+    dummyConfigMapMaster1: /dummyPath1
+    dummyConfigMapMaster2: /dummyPath2
+  worker:
+    dummyConfigMapWorker1: /dummyPath1
+    dummyConfigMapWorker2: /dummyPath2
+  fuse:
+    dummyConfigMapFuse1: /dummyPath1
+    dummyConfigMapFuse2: /dummyPath2
+  proxy:
+    dummyConfigMapProxy1: /dummyPath1
+    dummyConfigMapProxy2: /dummyPath2
+
+secrets:
+  master:
+    dummySecretMaster1: /dummyPath1
+    dummySecretMaster2: /dummyPath2
+  worker:
+    dummySecretWorker1: /dummyPath1
+    dummySecretWorker2: /dummyPath2
+  fuse:
+    dummySecretFuse1: /dummyPath1
+    dummySecretFuse2: /dummyPath2
+  proxy:
+    dummySecretProxy1: /dummyPath1
+    dummySecretProxy2: /dummyPath2
+
+
+## Dataset ##
+
+dataset:
+  # The path of the dataset. For example, s3://my-bucket/dataset
+  path: /dummy/dataset/path
+  # Any credentials for Alluxio to access the dataset. For example,
+  # credentials:
+  #   aws.accessKeyId: XXXXX
+  #   aws.secretKey: xxxx
+  credentials:
+    dummyCredential0: dummyVal0
+    dummyCredential1: dummyVal1
+
+
+## Alluxio Master ##
+
+master:
+  # Whether to launch Alluxio master pods
+  enabled: true
+  # Number of master deployed. For high-availability mode set this to an odd number > 1
+  count: 3
+  # Extra environment variables for Alluxio master pods. Format:
+  # env:
+  #   <key1>: <value1>
+  #   <key2>: <value2>
+  env:
+    masterEnvKey1: masterEnvVal1
+    masterEnvKey2: masterEnvVal2
+  # A list of JVM options specific to Alluxio masters
+  jvmOptions:
+    - masterJvmOption1
+    - masterJvmOption2
+  # Resources allocated to the containers running Alluxio masters
+  resources:
+    limits:
+      cpu: "4"
+      memory: "8Gi"
+    requests:
+      cpu: "1"
+      memory: "1Gi"
+  ports:
+    embedded: 19201
+    rpc: 19996
+    web: 19997
+  # Probes that do health checks on containers
+  readinessProbe:
+    initialDelaySeconds: 11
+    periodSeconds: 11
+    timeoutSeconds: 2
+    failureThreshold: 4
+    successThreshold: 2
+  livenessProbe:
+    initialDelaySeconds: 16
+    periodSeconds: 31
+    timeoutSeconds: 6
+    failureThreshold: 2
+  startupProbe:
+    initialDelaySeconds: 16
+    periodSeconds: 31
+    timeoutSeconds: 6
+    failureThreshold: 3
+  # Additional nodeSelector only for scheduling Alluxio masters
+  nodeSelector:
+    masterNodeSelectorKey1: masterNodeSelectorVal1
+    masterNodeSelectorKey2: masterNodeSelectorVal2
+  # Schedule Alluxio masters with affinity.
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: dummyMasterAffinityKey1
+                operator: In
+                values:
+                  - dummyMasterAffinityVal1
+                  - dummyMasterAffinityVal2
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: dummyMasterAffinityKey2
+                operator: In
+                values:
+                  - dummyMasterAffinityVal3
+
+  # Additional tolerations only for scheduling Alluxio masters
+  tolerations:
+    - key: MasterTolerationsKey0
+      operator: "Equal"
+      value: MasterTolerationsVal0
+      effect: NoSchedule
+    - key: MasterTolerationsKey1
+      operator: "Exists"
+      value: MasterTolerationsVal1
+      effect: NoExecute
+  podAnnotations:
+    masterAnnotationKey1: masterAnnotationVal1
+    masterAnnotationKey2: masterAnnotationVal2
+
+# Journal system of Alluxio master.
+journal:
+  # Whether to format the journal directory
+  runFormat: false
+  # PersistentVolumeClaim and hostPath are supported for storing journal.
+  type: hostPath
+  # Size of requested storage capacity for the persistentVolumeClaim.
+  # Required for type persistentVolumeClaim. Ignored otherwise.
+  size: 1Gi
+  # Required for type persistentVolumeClaim. Ignored otherwise.
+  storageClass: "standard"
+  # Required for type hostPath. Ignored otherwise.
+  # An initContainer running as root will change the owner of this directory to Alluxio.
+  hostPath: /mnt/alluxio/journal
+
+
+## Alluxio Worker ##
+
+worker:
+  # Number of workers to launch
+  count: 2
+  # Whether to limit at most one Alluxio worker per k8s node.
+  # Set to true if each k8s node has only one directory for Alluxio worker storage.
+  limitOneWorkerPerNode: true
+  # Extra environment variables for the Alluxio worker pods. Format:
+  # env:
+  #   <key1>: <value1>
+  #   <key2>: <value2>
+  env:
+    workerEnvKey1: workerEnvVal1
+    workerEnvKey2: workerEnvVal2
+  # A list of JVM options specific to Alluxio workers
+  jvmOptions:
+    - workerJvmOption1
+    - workerJvmOption2
+  # Resources allocated to the containers running Alluxio workers
+  resources:
+    limits:
+      cpu: "4"
+      memory: "4Gi"
+    requests:
+      cpu: "1"
+      memory: "2Gi"
+  ports:
+    rpc: 29998
+    web: 30001
+  # Probes that do health checks on containers
+  readinessProbe:
+    initialDelaySeconds: 11
+    periodSeconds: 11
+    timeoutSeconds: 2
+    failureThreshold: 4
+    successThreshold: 2
+  livenessProbe:
+    initialDelaySeconds: 16
+    periodSeconds: 31
+    timeoutSeconds: 6
+    failureThreshold: 2
+  startupProbe:
+    initialDelaySeconds: 16
+    periodSeconds: 31
+    timeoutSeconds: 6
+    failureThreshold: 3
+  # Additional nodeSelector only for scheduling Alluxio workers
+  nodeSelector:
+    masterNodeSelectorKey1: workerNodeSelectorVal1
+    masterNodeSelectorKey2: workerNodeSelectorVal2
+  # Schedule Alluxio workers with affinity.
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: dummyWorkerAffinityKey1
+                operator: In
+                values:
+                  - dummyWorkerAffinityVal1
+                  - dummyWorkerAffinityVal2
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: dummyWorkerAffinityKey2
+                operator: In
+                values:
+                  - dummyWorkerAffinityVal3
+
+  # Additional tolerations only for scheduling Alluxio workers
+  tolerations:
+    - key: workerTolerationsKey0
+      operator: "Equal"
+      value: workerTolerationsVal0
+      effect: NoSchedule
+    - key: workerTolerationsKey1
+      operator: "Exists"
+      value: workerTolerationsVal1
+      effect: NoExecute
+  podAnnotations:
+    workerAnnotationKey1: workerAnnotationVal1
+    workerAnnotationKey2: workerAnnotationVal2
+
+# Pagestore volume for Alluxio workers to store cached data.
+pagestore:
+    # Type of the volume for Alluxio worker page store. Can be persistentVolumeClaim, hostPath, or emptyDir.
+    type: persistentVolumeClaim
+    # Size of each worker's storage space
+    quota: 1Gi
+    # Required for volume type of hostPath, ignored otherwise
+    hostPath: /mnt/alluxio/pagestore
+    # Required for volume type of persistentVolumeClaim, ignored otherwise
+    storageClass: "standard"
+    # Requireid for volume type of emptyDir, ignored otherwise
+    memoryBacked: false
+
+# Metastore configures ROCKS DB to store metadata on workers instead of using heap.
+# Persistent Volume are required for metastore. Only ReadWriteOnce is supported.
+metastore:
+  # Whether metastore on worker is enabled.
+  enabled: true
+  # Size of requested storage capacity for the persistentVolumeClaim for metastore.
+  size: 1Gi
+  # StorageClass of the Persistent Volume for metastore
+  storageClass: "standard"
+
+
+## Alluxio Proxy ##
+
+proxy:
+  # Whether to launch Alluxio proxy pods
+  enabled: true
+  # Extra environment variables for the Alluxio proxy pods. Format:
+  # env:
+  #   <key1>: <value1>
+  #   <key2>: <value2>
+  env:
+    proxyEnvKey1: proxyEnvVal1
+    proxyEnvKey2: proxyEnvVal2
+  # A list of JVM options specific to Alluxio proxy
+  jvmOptions:
+    - proxyJvmOption1
+    - proxyJvmOption2
+  # Resources allocated to the containers running Alluxio proxies
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "1Gi"
+    limits:
+      cpu: "4"
+      memory: "4Gi"
+  ports:
+    web: 39998
+  # Additional nodeSelector only for scheduling Alluxio proxies
+  nodeSelector:
+    proxyNodeSelectorKey1: proxyNodeSelectorVal1
+    proxyNodeSelectorKey2: proxyNodeSelectorVal2
+  # Schedule Alluxio proxy with affinity.
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: dummyProxyAffinityKey1
+                operator: In
+                values:
+                  - dummyProxyAffinityVal1
+                  - dummyProxyAffinityVal2
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: dummyProxyAffinityKey2
+                operator: In
+                values:
+                  - dummyProxyAffinityVal3
+
+  # Additional tolerations only for scheduling Alluxio workers
+  tolerations:
+    - key: proxyTolerationsKey0
+      operator: "Equal"
+      value: proxyTolerationsVal0
+      effect: NoSchedule
+    - key: proxyTolerationsKey1
+      operator: "Exists"
+      value: proxyTolerationsVal1
+      effect: NoExecute
+  podAnnotations:
+    proxyAnnotationKey1: proxyAnnotationVal1
+    proxyAnnotationKey2: proxyAnnotationVal2
+
+
+## Alluxio FUSE ##
+
+fuse:
+  # Whether to launch Fuse pods
+  enabled: true
+  # Extra environment variables for the Alluxio fuse pods. Format:
+  # env:
+  #   <key1>: <value1>
+  #   <key2>: <value2>
+  env:
+    fuseEnvKey1: fuseEnvVal1
+    fuseEnvKey2: fuseEnvVal2
+  # A list of JVM options specific to Alluxio Fuse
+  jvmOptions:
+    - fuseJvmOption1
+    - fuseJvmOption2
+  # Fuse related mount options
+  mountOptions:
+    - allow_other
+    - entry_timeout=3600
+    - attr_timeout=3600
+  # Resources allocated to the containers running Alluxio Fuse
+  resources:
+    requests:
+      cpu: "0.5"
+      memory: "1Gi"
+    limits:
+      cpu: "4"
+      memory: "4Gi"
+  # Additional nodeSelector only for scheduling Alluxio Fuse
+  nodeSelector:
+    fuseNodeSelectorKey1: fuseNodeSelectorVal1
+    fuseNodeSelectorKey2: fuseNodeSelectorVal2
+  # Schedule Alluxio proxy with affinity.
+  affinity:
+    nodeAffinity:
+      requiredDuringSchedulingIgnoredDuringExecution:
+        nodeSelectorTerms:
+          - matchExpressions:
+              - key: dummyFuseAffinityKey1
+                operator: In
+                values:
+                  - dummyFuseAffinityVal1
+                  - dummyFuseAffinityVal2
+      preferredDuringSchedulingIgnoredDuringExecution:
+        - weight: 1
+          preference:
+            matchExpressions:
+              - key: dummyFuseAffinityKey2
+                operator: In
+                values:
+                  - dummyFuseAffinityVal3
+
+  # Additional tolerations only for scheduling Alluxio workers
+  tolerations:
+    - key: fuseTolerationsKey0
+      operator: "Equal"
+      value: fuseyTolerationsVal0
+      effect: NoSchedule
+    - key: fuseTolerationsKey1
+      operator: "Exists"
+      value: fuseTolerationsVal1
+      effect: NoExecute
+  podAnnotations:
+    proxyAnnotationKey1: fuseAnnotationVal1
+    proxyAnnotationKey2: fuseAnnotationVal2
+
+# CSI (Container Storage Interface) is for launching Alluxio Fuse on demand.
+# Fuse pods launched by CSI use configuration specified in the fuse section above.
+csi:
+  # whether to launch CSI components
+  enabled: true
+  imagePullPolicy: IfNotPresent
+  controllerPlugin:
+    provisioner:
+      image: registry.k8s.io/sig-storage/csi-provisioner:v2.0.5
+      resources:
+        limits:
+          cpu: 100m
+          memory: 300Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+    controller:
+      image: dummy/dummy
+      imageTag: dummyTag
+      resources:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+  nodePlugin:
+    nodeserver:
+      image: dummy/dummy
+      imageTag: dummyTag
+      resources:
+        limits:
+          cpu: 200m
+          memory: 200Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+    driverRegistrar:
+      image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.0.0
+      resources:
+        limits:
+          cpu: 100m
+          memory: 100Mi
+        requests:
+          cpu: 10m
+          memory: 20Mi
+
+##  Metrics System ##
+
+# Settings for Alluxio metrics
+metrics:
+  # Enable ConsoleSink by class name
+  consoleSink:
+    enabled: true
+    # Polling period for ConsoleSink
+    period: 11
+    # Unit of poll period
+    unit: seconds
+  # Enable CsvSink by class name
+  csvSink:
+    enabled: true
+    # Polling period for CsvSink
+    period: 1
+    # Unit of poll period
+    unit: seconds
+    # Polling directory for CsvSink, ensure this directory exists!
+    directory: /tmp/csv-metrics
+  # Enable JmxSink by class name
+  jmxSink:
+    enabled: true
+    # Jmx domain
+    domain: io.alluxio
+  # Enable GraphiteSink by class name
+  graphiteSink:
+    enabled: true
+    # Hostname of Graphite server
+    hostname: dummyHostname
+    # Port of Graphite server
+    port: 65535
+    # Poll period
+    period: 11
+    # Unit of poll period
+    unit: seconds
+    # Prefix to prepend to metric name
+    prefix: dummyPrefix
+  # Enable Slf4jSink by class name
+  slf4jSink:
+    enabled: true
+    # Poll period
+    period: 11
+    # Units of poll period
+    unit: seconds
+    # Contains all metrics
+    filterClass: dummy
+    # Contains all metrics
+    filterRegex: dummy
+  # Enable PrometheusMetricsServlet by class name
+  prometheusMetricsServlet:
+    enabled: true
+    # Pod annotations for Prometheus. Example:
+    # podAnnotations:
+    #   prometheus.io/scrape: "true"
+    #   prometheus.io/masterPort: "19999"
+    #   prometheus.io/workerPort: "30000"
+    #   prometheus.io/path: "/metrics/prometheus/"
+    podAnnotations:
+      dummyPrometheusKey1: dummyVal1
+      dummyPrometheusKey2: dummyVal2

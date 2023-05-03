@@ -1,0 +1,177 @@
+---
+# Source: alluxio/templates/proxy/daemonset.yaml
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: RELEASE-NAME-alluxio-proxy
+  labels:
+    name: RELEASE-NAME-alluxio-proxy
+    app: alluxio
+    chart: alluxio-1.0.0
+    release: RELEASE-NAME
+    heritage: Helm
+    role: alluxio-proxy
+spec:
+  selector:
+    matchLabels:
+      name: RELEASE-NAME-alluxio-proxy
+      app: alluxio
+      chart: alluxio-1.0.0
+      release: RELEASE-NAME
+      heritage: Helm
+      role: alluxio-proxy
+  template:
+    metadata:
+      labels:
+        name: RELEASE-NAME-alluxio-proxy
+        app: alluxio
+        chart: alluxio-1.0.0
+        release: RELEASE-NAME
+        heritage: Helm
+        role: alluxio-proxy
+      annotations:
+        workerAnnotationKey1: workerAnnotationVal1
+        workerAnnotationKey2: workerAnnotationVal2
+        dummyPrometheusKey1: dummyVal1
+        dummyPrometheusKey2: dummyVal2
+    spec:
+      hostNetwork: false
+      dnsPolicy: dummyDnsPolicy
+      hostAliases:
+        - ip: 0.0.0.0
+          hostnames:
+            - example00.com
+            - example01.com
+        - ip: 0.0.0.1
+          hostnames:
+            - example10.com
+            - example11.com
+      nodeSelector:
+        proxyNodeSelectorKey1: proxyNodeSelectorVal1
+        proxyNodeSelectorKey2: proxyNodeSelectorVal2
+        globalNodeSelectorKey1: globalNodeSelectorVal1
+        globalNodeSelectorKey2: globalNodeSelectorVal2
+      affinity:        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: dummyProxyAffinityKey2
+                operator: In
+                values:
+                - dummyProxyAffinityVal3
+            weight: 1
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: dummyProxyAffinityKey1
+                operator: In
+                values:
+                - dummyProxyAffinityVal1
+                - dummyProxyAffinityVal2
+      tolerations:
+        - effect: NoSchedule
+          key: proxyTolerationsKey0
+          operator: Equal
+          value: proxyTolerationsVal0
+        - effect: NoExecute
+          key: proxyTolerationsKey1
+          operator: Exists
+          value: proxyTolerationsVal1
+        - effect: NoSchedule
+          key: globalTolerationsKey0
+          operator: Equal
+          value: globalTolerationsVal0
+        - effect: NoExecute
+          key: globalTolerationsKey1
+          operator: Exists
+          value: globalTolerationsVal1
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      serviceAccountName: dummyServiceAccountName
+      imagePullSecrets:
+        - name: dummySecret1
+        - name: dummySecret2
+      containers:
+        - name: alluxio-proxy
+          image: dummy/dummy:dummy
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 4
+              memory: 4Gi
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+          command: ["/entrypoint.sh"]
+          args:
+            - proxy
+          env:
+            - name: ALLUXIO_CLIENT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: "proxyEnvKey1"
+              value: "proxyEnvVal1"
+            - name: "proxyEnvKey2"
+              value: "proxyEnvVal2"
+          ports:
+            - containerPort: 39998
+              name: web
+          volumeMounts:
+            - name: RELEASE-NAME-alluxio-alluxio-conf
+              mountPath: /opt/alluxio/conf            
+            - name: dummySecretProxy1-volume
+              mountPath: /dummyPath1
+              readOnly: true
+            - name: dummySecretProxy2-volume
+              mountPath: /dummyPath2
+              readOnly: true            
+            - name: dummyConfigMapProxy1-volume
+              mountPath: /dummyPath1
+              readOnly: true
+            - name: dummyConfigMapProxy2-volume
+              mountPath: /dummyPath2
+              readOnly: true            
+            - name: dummyPvcProxy1-volume
+              mountPath: /dummyPath1
+              readOnly: false
+            - name: dummyPvcProxy2-volume
+              mountPath: /dummyPath2
+              readOnly: false
+      volumes:
+        - name: RELEASE-NAME-alluxio-alluxio-conf
+          configMap:
+            name: RELEASE-NAME-alluxio-alluxio-conf        
+        - name: dummySecretProxy1-volume
+          secret:
+            secretName: dummySecretProxy1
+            defaultMode: 256
+        - name: dummySecretProxy2-volume
+          secret:
+            secretName: dummySecretProxy2
+            defaultMode: 256        
+        - name: dummyConfigMapProxy1-volume
+          configMap:
+            name: dummyConfigMapProxy1
+        - name: dummyConfigMapProxy2-volume
+          configMap:
+            name: dummyConfigMapProxy2        
+        - name: dummyPvcProxy1-volume
+          persistentVolumeClaim:
+            claimName: dummyPvcProxy1
+        - name: dummyPvcProxy2-volume
+          persistentVolumeClaim:
+            claimName: dummyPvcProxy2

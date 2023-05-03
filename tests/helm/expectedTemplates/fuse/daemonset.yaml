@@ -1,0 +1,196 @@
+---
+---
+# Source: alluxio/templates/fuse/daemonset.yaml
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+
+
+apiVersion: apps/v1
+kind: DaemonSet
+metadata:
+  name: RELEASE-NAME-alluxio-fuse
+  labels:
+    app: alluxio
+    chart: alluxio-1.0.0
+    release: RELEASE-NAME
+    heritage: Helm
+    role: alluxio-fuse
+spec:
+  selector:
+    matchLabels:
+      app: alluxio
+      chart: alluxio-1.0.0
+      release: RELEASE-NAME
+      heritage: Helm
+      role: alluxio-fuse
+  template:
+    metadata:
+      labels:
+        app: alluxio
+        chart: alluxio-1.0.0
+        release: RELEASE-NAME
+        heritage: Helm
+        role: alluxio-fuse
+      annotations:
+        proxyAnnotationKey1: fuseAnnotationVal1
+        proxyAnnotationKey2: fuseAnnotationVal2
+        dummyPrometheusKey1: dummyVal1
+        dummyPrometheusKey2: dummyVal2
+    spec:
+      hostNetwork: false
+      dnsPolicy: dummyDnsPolicy
+      nodeSelector:
+        fuseNodeSelectorKey1: fuseNodeSelectorVal1
+        fuseNodeSelectorKey2: fuseNodeSelectorVal2
+        globalNodeSelectorKey1: globalNodeSelectorVal1
+        globalNodeSelectorKey2: globalNodeSelectorVal2
+      affinity:        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: dummyFuseAffinityKey2
+                operator: In
+                values:
+                - dummyFuseAffinityVal3
+            weight: 1
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: dummyFuseAffinityKey1
+                operator: In
+                values:
+                - dummyFuseAffinityVal1
+                - dummyFuseAffinityVal2
+      tolerations:
+        - effect: NoSchedule
+          key: fuseTolerationsKey0
+          operator: Equal
+          value: fuseyTolerationsVal0
+        - effect: NoExecute
+          key: fuseTolerationsKey1
+          operator: Exists
+          value: fuseTolerationsVal1
+        - effect: NoSchedule
+          key: globalTolerationsKey0
+          operator: Equal
+          value: globalTolerationsVal0
+        - effect: NoExecute
+          key: globalTolerationsKey1
+          operator: Exists
+          value: globalTolerationsVal1
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      serviceAccountName: dummyServiceAccountName
+      imagePullSecrets:
+        - name: dummySecret1
+        - name: dummySecret2
+      initContainers:
+        - name: wait-master
+          image: dummy/dummy:dummy
+          command: ["/bin/sh", "-c"]
+          args:
+            - until nslookup RELEASE-NAME-alluxio-master-0;
+              do sleep 2;
+              done
+          volumeMounts:
+          - name: RELEASE-NAME-alluxio-alluxio-conf
+            mountPath: /opt/alluxio/conf
+      containers:
+        - name: alluxio-fuse
+          image: dummy/dummy:dummy
+          imagePullPolicy: IfNotPresent
+          resources:
+          resources:
+            limits:
+              cpu: 4
+              memory: 4Gi
+            requests:
+              cpu: 0.5
+              memory: 1Gi
+          command: ["/entrypoint.sh"]
+          args:
+            - fuse
+            - /dummy/dataset/path
+            - /mnt/alluxio/fuse
+            - -o allow_other
+            - -o entry_timeout=3600
+            - -o attr_timeout=3600
+          env:
+            - name: ALLUXIO_CLIENT_HOSTNAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: "fuseEnvKey1"
+              value: "fuseEnvVal1"
+            - name: "fuseEnvKey2"
+              value: "fuseEnvVal2"
+          securityContext:
+            privileged: true # required by bidirectional mount
+          lifecycle:
+            preStop:
+              exec:
+                command: ["/opt/alluxio/integration/fuse/bin/alluxio-fuse", "unmount", /mnt/alluxio/fuse]
+          volumeMounts:
+            - name: alluxio-fuse-mount
+              mountPath: /mnt/alluxio
+              mountPropagation: Bidirectional
+            - name: RELEASE-NAME-alluxio-alluxio-conf
+              mountPath: /opt/alluxio/conf            
+            - name: dummySecretFuse1-volume
+              mountPath: /dummyPath1
+              readOnly: true
+            - name: dummySecretFuse2-volume
+              mountPath: /dummyPath2
+              readOnly: true            
+            - name: dummyConfigMapFuse1-volume
+              mountPath: /dummyPath1
+              readOnly: true
+            - name: dummyConfigMapFuse2-volume
+              mountPath: /dummyPath2
+              readOnly: true            
+            - name: dummyPvcFuse1-volume
+              mountPath: /dummyPath1
+              readOnly: false
+            - name: dummyPvcFuse2-volume
+              mountPath: /dummyPath2
+              readOnly: false
+      restartPolicy: Always
+      volumes:
+        - name: alluxio-fuse-mount
+          hostPath:
+            path: /mnt/alluxio
+            type: DirectoryOrCreate
+        - name: RELEASE-NAME-alluxio-alluxio-conf
+          configMap:
+            name: RELEASE-NAME-alluxio-alluxio-conf        
+        - name: dummySecretFuse1-volume
+          secret:
+            secretName: dummySecretFuse1
+            defaultMode: 256
+        - name: dummySecretFuse2-volume
+          secret:
+            secretName: dummySecretFuse2
+            defaultMode: 256        
+        - name: dummyConfigMapFuse1-volume
+          configMap:
+            name: dummyConfigMapFuse1
+        - name: dummyConfigMapFuse2-volume
+          configMap:
+            name: dummyConfigMapFuse2        
+        - name: dummyPvcFuse1-volume
+          persistentVolumeClaim:
+            claimName: dummyPvcFuse1
+        - name: dummyPvcFuse2-volume
+          persistentVolumeClaim:
+            claimName: dummyPvcFuse2
