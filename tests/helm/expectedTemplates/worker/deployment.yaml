@@ -16,31 +16,31 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: RELEASE-NAME-alluxio-worker
+  name: dummy-alluxio-worker
   labels:
-    name: RELEASE-NAME-alluxio-worker
+    name: dummy-alluxio-worker
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
     role: alluxio-worker
 spec:
   replicas: 2
   selector:
     matchLabels:
-      name: RELEASE-NAME-alluxio-worker
+      name: dummy-alluxio-worker
       app: alluxio
       chart: alluxio-1.0.0
-      release: RELEASE-NAME
+      release: dummy
       heritage: Helm
       role: alluxio-worker
   template:
     metadata:
       labels:
-        name: RELEASE-NAME-alluxio-worker
+        name: dummy-alluxio-worker
         app: alluxio
         chart: alluxio-1.0.0
-        release: RELEASE-NAME
+        release: dummy
         heritage: Helm
         role: alluxio-worker
       annotations:
@@ -122,7 +122,7 @@ spec:
         image: dummy/dummy:dummy
         command: [ "/bin/sh", "-c" ]
         args:
-          - until nslookup RELEASE-NAME-alluxio-master-0;
+          - until nslookup dummy-alluxio-master-0;
             do sleep 2;
             done
       containers:
@@ -177,9 +177,9 @@ spec:
           - containerPort: 30001
             name: web
           volumeMounts:
-            - name: RELEASE-NAME-alluxio-alluxio-conf
+            - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
-            - name: RELEASE-NAME-alluxio-metastore-volume
+            - name: dummy-alluxio-metastore-volume
               mountPath: /mnt/alluxio/metastore            
             - name: dummySecretWorker1-volume
               mountPath: /dummyPath1
@@ -200,15 +200,15 @@ spec:
               mountPath: /dummyPath2
               readOnly: false
             - mountPath: /mnt/alluxio/pagestore
-              name: RELEASE-NAME-alluxio-pagestore-volume
+              name: dummy-alluxio-pagestore-volume
       restartPolicy: Always
       volumes:
-        - name: RELEASE-NAME-alluxio-alluxio-conf
+        - name: dummy-alluxio-alluxio-conf
           configMap:
-            name: RELEASE-NAME-alluxio-alluxio-conf
-        - name: RELEASE-NAME-alluxio-metastore-volume
+            name: dummy-alluxio-alluxio-conf
+        - name: dummy-alluxio-metastore-volume
           persistentVolumeClaim:
-            claimName: RELEASE-NAME-alluxio-metastore-pvc        
+            claimName: dummy-alluxio-metastore-pvc        
         - name: dummySecretWorker1-volume
           secret:
             secretName: dummySecretWorker1
@@ -229,6 +229,6 @@ spec:
         - name: dummyPvcWorker2-volume
           persistentVolumeClaim:
             claimName: dummyPvcWorker2
-        - name: RELEASE-NAME-alluxio-pagestore-volume
+        - name: dummy-alluxio-pagestore-volume
           persistentVolumeClaim:
-            claimName: RELEASE-NAME-alluxio-pagestore-pvc
+            claimName: dummy-alluxio-pagestore-pvc

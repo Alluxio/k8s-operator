@@ -14,12 +14,12 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: RELEASE-NAME-alluxio-master
+  name: dummy-alluxio-master
   labels:
-    name: RELEASE-NAME-alluxio-master
+    name: dummy-alluxio-master
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
     role: alluxio-master
 spec:
@@ -27,16 +27,16 @@ spec:
     matchLabels:
       app: alluxio
       role: alluxio-master
-      name: RELEASE-NAME-alluxio-master
-  serviceName: RELEASE-NAME-alluxio-master
+      name: dummy-alluxio-master
+  serviceName: dummy-alluxio-master
   replicas: 3
   template:
     metadata:
       labels:
-        name: RELEASE-NAME-alluxio-master
+        name: dummy-alluxio-master
         app: alluxio
         chart: alluxio-1.0.0
-        release: RELEASE-NAME
+        release: dummy
         heritage: Helm
         role: alluxio-master
       annotations:
@@ -116,7 +116,7 @@ spec:
           - 1000:1000
           - /mnt/alluxio/journal
         volumeMounts:
-          - name: RELEASE-NAME-alluxio-journal-volume
+          - name: dummy-alluxio-journal-volume
             mountPath: /mnt/alluxio/journal
       containers:
         - name: alluxio-master
@@ -172,9 +172,9 @@ spec:
           - containerPort: 19201
             name: embedded
           volumeMounts:
-            - name: RELEASE-NAME-alluxio-alluxio-conf
+            - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
-            - name: RELEASE-NAME-alluxio-journal-volume
+            - name: dummy-alluxio-journal-volume
               mountPath: /mnt/alluxio/journal            
             - name: dummySecretMaster1-volume
               mountPath: /dummyPath1
@@ -196,9 +196,9 @@ spec:
               readOnly: false
       restartPolicy: Always
       volumes:
-        - name: RELEASE-NAME-alluxio-alluxio-conf
+        - name: dummy-alluxio-alluxio-conf
           configMap:
-            name: RELEASE-NAME-alluxio-alluxio-conf        
+            name: dummy-alluxio-alluxio-conf        
         - name: dummySecretMaster1-volume
           secret:
             secretName: dummySecretMaster1
@@ -219,7 +219,7 @@ spec:
         - name: dummyPvcMaster2-volume
           persistentVolumeClaim:
             claimName: dummyPvcMaster2
-        - name: RELEASE-NAME-alluxio-journal-volume
+        - name: dummy-alluxio-journal-volume
           hostPath:
             path: /mnt/alluxio/journal
             type: DirectoryOrCreate

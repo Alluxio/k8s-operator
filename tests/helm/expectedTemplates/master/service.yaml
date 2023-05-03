@@ -15,11 +15,11 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: RELEASE-NAME-alluxio-master-0
+  name: dummy-alluxio-master-0
   labels:
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
     role: alluxio-master
 spec:
@@ -34,8 +34,8 @@ spec:
   selector:
     role: alluxio-master
     app: alluxio
-    release: RELEASE-NAME
-    statefulset.kubernetes.io/pod-name: RELEASE-NAME-alluxio-master-0
+    release: dummy
+    statefulset.kubernetes.io/pod-name: dummy-alluxio-master-0
 ---
 # Source: alluxio/templates/master/service.yaml
 # Set scope back to root for variable access in values.yaml.
@@ -43,11 +43,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: RELEASE-NAME-alluxio-master-1
+  name: dummy-alluxio-master-1
   labels:
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
     role: alluxio-master
 spec:
@@ -62,8 +62,8 @@ spec:
   selector:
     role: alluxio-master
     app: alluxio
-    release: RELEASE-NAME
-    statefulset.kubernetes.io/pod-name: RELEASE-NAME-alluxio-master-1
+    release: dummy
+    statefulset.kubernetes.io/pod-name: dummy-alluxio-master-1
 ---
 # Source: alluxio/templates/master/service.yaml
 # Set scope back to root for variable access in values.yaml.
@@ -71,11 +71,11 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: RELEASE-NAME-alluxio-master-2
+  name: dummy-alluxio-master-2
   labels:
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
     role: alluxio-master
 spec:
@@ -90,5 +90,5 @@ spec:
   selector:
     role: alluxio-master
     app: alluxio
-    release: RELEASE-NAME
-    statefulset.kubernetes.io/pod-name: RELEASE-NAME-alluxio-master-2
+    release: dummy
+    statefulset.kubernetes.io/pod-name: dummy-alluxio-master-2

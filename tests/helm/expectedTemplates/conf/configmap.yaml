@@ -14,12 +14,12 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: RELEASE-NAME-alluxio-alluxio-conf
+  name: dummy-alluxio-alluxio-conf
   labels:
-    name: RELEASE-NAME-alluxio-alluxio-conf
+    name: dummy-alluxio-alluxio-conf
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
 data:
   alluxio-site.properties: |-
@@ -38,7 +38,7 @@ data:
     # Journal properties
     alluxio.master.journal.type=EMBEDDED
     alluxio.master.journal.folder=/mnt/alluxio/journal
-    alluxio.master.embedded.journal.addresses=,RELEASE-NAME-alluxio-master-0:19200,RELEASE-NAME-alluxio-master-1:19200,RELEASE-NAME-alluxio-master-2:19200
+    alluxio.master.embedded.journal.addresses=,dummy-alluxio-master-0:19200,dummy-alluxio-master-1:19200,dummy-alluxio-master-2:19200
     
     # Page Storage
     alluxio.worker.block.store.type=PAGE
@@ -285,9 +285,9 @@ data:
     kind: Pod
     apiVersion: v1
     metadata:
-      name: RELEASE-NAME-alluxio-fuse
+      name: dummy-alluxio-fuse
       labels:
-        name: RELEASE-NAME-alluxio-fuse
+        name: dummy-alluxio-fuse
         app: alluxio
         role: alluxio-fuse
     spec:
@@ -305,11 +305,11 @@ data:
         image: dummy/dummy:dummy
         command: ["/bin/sh", "-c"]
         args:
-          - until nslookup RELEASE-NAME-alluxio-master-0;
+          - until nslookup dummy-alluxio-master-0;
             do sleep 2;
             done
         volumeMounts:
-        - name: RELEASE-NAME-alluxio-alluxio-conf
+        - name: dummy-alluxio-alluxio-conf
           mountPath: /opt/alluxio/conf
       containers:
         - name: alluxio-fuse
@@ -337,7 +337,7 @@ data:
           securityContext:
             privileged: true # required by bidirectional mount
           volumeMounts:
-            - name: RELEASE-NAME-alluxio-alluxio-conf
+            - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
             - name: pods-mount-dir
               mountPath: /var/lib/kubelet
@@ -366,9 +366,9 @@ data:
           hostPath:
             path: /var/lib/kubelet
             type: Directory
-        - name: RELEASE-NAME-alluxio-alluxio-conf
+        - name: dummy-alluxio-alluxio-conf
           configMap:
-            name: RELEASE-NAME-alluxio-alluxio-conf    
+            name: dummy-alluxio-alluxio-conf    
         - name: dummySecretFuse1-volume
           secret:
             secretName: dummySecretFuse1

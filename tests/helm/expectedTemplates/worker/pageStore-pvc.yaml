@@ -13,12 +13,12 @@
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
-  name: RELEASE-NAME-alluxio-pagestore-pvc
+  name: dummy-alluxio-pagestore-pvc
   labels:
-    name: RELEASE-NAME-alluxio-pagestore-pvc
+    name: dummy-alluxio-pagestore-pvc
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
 spec:
   resources:
@@ -29,8 +29,8 @@ spec:
     - ReadWriteOnce
   selector:
     matchLabels:
-      name: RELEASE-NAME-alluxio-pagestore-pvc
+      name: dummy-alluxio-pagestore-pvc
       app: alluxio
       chart: alluxio-1.0.0
-      release: RELEASE-NAME
+      release: dummy
       heritage: Helm

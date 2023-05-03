@@ -3,12 +3,12 @@
 kind: Deployment
 apiVersion: apps/v1
 metadata:
-  name: RELEASE-NAME-alluxio-csi-controller
+  name: dummy-alluxio-csi-controller
   labels:
-    name: RELEASE-NAME-alluxio-csi-controller
+    name: dummy-alluxio-csi-controller
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
     role: alluxio-csi-controller
 spec:
@@ -17,14 +17,14 @@ spec:
     matchLabels:
       app: alluxio
       role: alluxio-csi-controller
-      name: RELEASE-NAME-alluxio-csi-controller
+      name: dummy-alluxio-csi-controller
   template:
     metadata:
       labels:
-        name: RELEASE-NAME-alluxio-csi-controller
+        name: dummy-alluxio-csi-controller
         app: alluxio
         chart: alluxio-1.0.0
-        release: RELEASE-NAME
+        release: dummy
         heritage: Helm
         role: alluxio-csi-controller
     spec:
@@ -77,7 +77,7 @@ spec:
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
-            - name: RELEASE-NAME-alluxio-alluxio-conf
+            - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
           resources:
             limits:
@@ -89,9 +89,9 @@ spec:
       volumes:
         - name: socket-dir
           emptyDir: {}
-        - name: RELEASE-NAME-alluxio-alluxio-conf
+        - name: dummy-alluxio-alluxio-conf
           configMap:
-            name: RELEASE-NAME-alluxio-alluxio-conf
+            name: dummy-alluxio-alluxio-conf
 ---
 # Source: alluxio/templates/csi/controller.yaml
 #

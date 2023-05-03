@@ -14,30 +14,30 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: RELEASE-NAME-alluxio-proxy
+  name: dummy-alluxio-proxy
   labels:
-    name: RELEASE-NAME-alluxio-proxy
+    name: dummy-alluxio-proxy
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
     role: alluxio-proxy
 spec:
   selector:
     matchLabels:
-      name: RELEASE-NAME-alluxio-proxy
+      name: dummy-alluxio-proxy
       app: alluxio
       chart: alluxio-1.0.0
-      release: RELEASE-NAME
+      release: dummy
       heritage: Helm
       role: alluxio-proxy
   template:
     metadata:
       labels:
-        name: RELEASE-NAME-alluxio-proxy
+        name: dummy-alluxio-proxy
         app: alluxio
         chart: alluxio-1.0.0
-        release: RELEASE-NAME
+        release: dummy
         heritage: Helm
         role: alluxio-proxy
       annotations:
@@ -132,7 +132,7 @@ spec:
             - containerPort: 39998
               name: web
           volumeMounts:
-            - name: RELEASE-NAME-alluxio-alluxio-conf
+            - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf            
             - name: dummySecretProxy1-volume
               mountPath: /dummyPath1
@@ -153,9 +153,9 @@ spec:
               mountPath: /dummyPath2
               readOnly: false
       volumes:
-        - name: RELEASE-NAME-alluxio-alluxio-conf
+        - name: dummy-alluxio-alluxio-conf
           configMap:
-            name: RELEASE-NAME-alluxio-alluxio-conf        
+            name: dummy-alluxio-alluxio-conf        
         - name: dummySecretProxy1-volume
           secret:
             secretName: dummySecretProxy1

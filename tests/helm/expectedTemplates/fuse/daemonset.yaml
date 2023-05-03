@@ -16,11 +16,11 @@
 apiVersion: apps/v1
 kind: DaemonSet
 metadata:
-  name: RELEASE-NAME-alluxio-fuse
+  name: dummy-alluxio-fuse
   labels:
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
     role: alluxio-fuse
 spec:
@@ -28,7 +28,7 @@ spec:
     matchLabels:
       app: alluxio
       chart: alluxio-1.0.0
-      release: RELEASE-NAME
+      release: dummy
       heritage: Helm
       role: alluxio-fuse
   template:
@@ -36,7 +36,7 @@ spec:
       labels:
         app: alluxio
         chart: alluxio-1.0.0
-        release: RELEASE-NAME
+        release: dummy
         heritage: Helm
         role: alluxio-fuse
       annotations:
@@ -100,11 +100,11 @@ spec:
           image: dummy/dummy:dummy
           command: ["/bin/sh", "-c"]
           args:
-            - until nslookup RELEASE-NAME-alluxio-master-0;
+            - until nslookup dummy-alluxio-master-0;
               do sleep 2;
               done
           volumeMounts:
-          - name: RELEASE-NAME-alluxio-alluxio-conf
+          - name: dummy-alluxio-alluxio-conf
             mountPath: /opt/alluxio/conf
       containers:
         - name: alluxio-fuse
@@ -145,7 +145,7 @@ spec:
             - name: alluxio-fuse-mount
               mountPath: /mnt/alluxio
               mountPropagation: Bidirectional
-            - name: RELEASE-NAME-alluxio-alluxio-conf
+            - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf            
             - name: dummySecretFuse1-volume
               mountPath: /dummyPath1
@@ -171,9 +171,9 @@ spec:
           hostPath:
             path: /mnt/alluxio
             type: DirectoryOrCreate
-        - name: RELEASE-NAME-alluxio-alluxio-conf
+        - name: dummy-alluxio-alluxio-conf
           configMap:
-            name: RELEASE-NAME-alluxio-alluxio-conf        
+            name: dummy-alluxio-alluxio-conf        
         - name: dummySecretFuse1-volume
           secret:
             secretName: dummySecretFuse1

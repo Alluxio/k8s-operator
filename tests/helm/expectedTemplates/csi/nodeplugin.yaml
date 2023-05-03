@@ -16,12 +16,12 @@
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
-  name: RELEASE-NAME-alluxio-csi-nodeplugin
+  name: dummy-alluxio-csi-nodeplugin
   labels:
-    name: RELEASE-NAME-alluxio-csi-nodeplugin
+    name: dummy-alluxio-csi-nodeplugin
     app: alluxio
     chart: alluxio-1.0.0
-    release: RELEASE-NAME
+    release: dummy
     heritage: Helm
     role: alluxio-csi-nodeplugin
 spec:
@@ -29,14 +29,14 @@ spec:
     matchLabels:
       app: alluxio
       role: alluxio-csi-nodeplugin
-      name: RELEASE-NAME-alluxio-csi-nodeplugin
+      name: dummy-alluxio-csi-nodeplugin
   template:
     metadata:
       labels:
-        name: RELEASE-NAME-alluxio-csi-nodeplugin
+        name: dummy-alluxio-csi-nodeplugin
         app: alluxio
         chart: alluxio-1.0.0
-        release: RELEASE-NAME
+        release: dummy
         heritage: Helm
         role: alluxio-csi-nodeplugin
     spec:
@@ -110,7 +110,7 @@ spec:
             - name: pods-mount-dir
               mountPath: /var/lib/kubelet
               mountPropagation: "Bidirectional"
-            - name: RELEASE-NAME-alluxio-alluxio-conf
+            - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
       volumes:
         - name: plugin-dir
@@ -125,6 +125,6 @@ spec:
           hostPath:
             path: /var/lib/kubelet/plugins_registry
             type: Directory
-        - name: RELEASE-NAME-alluxio-alluxio-conf
+        - name: dummy-alluxio-alluxio-conf
           configMap:
-            name: RELEASE-NAME-alluxio-alluxio-conf
+            name: dummy-alluxio-alluxio-conf
