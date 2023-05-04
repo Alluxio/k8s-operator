@@ -128,6 +128,13 @@ function verifyCsiTemplate {
     echo "Alluxio csi nodeplugin template is not rendered as expected."
     return 1
   fi
+  local storageClass_relative_path="csi/storageClass.yaml"
+  helm template --name-template dummy "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${storageClass_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${storageClass_relative_path}"
+  cmp --silent "${TARGET_DIR}/${storageClass_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${storageClass_relative_path}"
+  if [[ $? -ne 0 ]]; then
+    echo "Alluxio csi storageClass template is not rendered as expected."
+    return 1
+  fi
 }
 
 main
