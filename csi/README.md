@@ -1,10 +1,13 @@
 ## Alluxio CSI Driver
 
-This module implements container storage interface(https://github.com/container-storage-interface/spec) for Alluxio.
+AlluxioCSI implements Container Storage Interface(https://github.com/container-storage-interface/spec)
+for Alluxio on Kubernetes. By using AlluxioCSI, AlluxioFuse process can be spawned on demand
+instead of run as a long-running process.
 
-To see how to use Alluxio CSI Driver, please check out:
+To see how to run Alluxio CSI Driver, please check out:
 https://docs.alluxio.io/os/user/stable/en/kubernetes/Running-Alluxio-On-Kubernetes.html#csi
 
-or,
-
-https://github.com/Alluxio/alluxio/blob/master/integration/kubernetes/CSI_README.md
+To build Alluxio CSI, enter the root directory of `Alluxio/k8s-operator` repository, and run
+```console
+$ docker build -t <image-name> -f ./build/csi/Dockerfile .
+```
