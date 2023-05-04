@@ -321,6 +321,8 @@ csi:
   # whether to launch CSI components
   enabled: false
   imagePullPolicy: IfNotPresent
+  # Create storageClass for dynamic provision automatically
+  createStorageClass: true
   controllerPlugin:
     provisioner:
       image: registry.k8s.io/sig-storage/csi-provisioner:v2.0.5
