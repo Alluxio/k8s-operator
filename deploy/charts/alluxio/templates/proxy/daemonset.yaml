@@ -65,7 +65,7 @@ spec:
       {{- end }}
       affinity:
       {{- if .Values.proxy.affinity }}
-{{- toYaml .Values.proxy.affinity | indent 8 }}
+{{- toYaml .Values.proxy.affinity | nindent 8 }}
       {{- end }}
       tolerations:
       {{- if .Values.proxy.tolerations }}

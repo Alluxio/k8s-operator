@@ -1,0 +1,234 @@
+---
+# Source: alluxio/templates/worker/deployment.yaml
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: dummy-alluxio-worker
+  labels:
+    name: dummy-alluxio-worker
+    app: alluxio
+    chart: alluxio-1.0.0
+    release: dummy
+    heritage: Helm
+    role: alluxio-worker
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      name: dummy-alluxio-worker
+      app: alluxio
+      chart: alluxio-1.0.0
+      release: dummy
+      heritage: Helm
+      role: alluxio-worker
+  template:
+    metadata:
+      labels:
+        name: dummy-alluxio-worker
+        app: alluxio
+        chart: alluxio-1.0.0
+        release: dummy
+        heritage: Helm
+        role: alluxio-worker
+      annotations:
+        workerAnnotationKey1: workerAnnotationVal1
+        workerAnnotationKey2: workerAnnotationVal2
+        dummyPrometheusKey1: dummyVal1
+        dummyPrometheusKey2: dummyVal2
+    spec:
+      hostNetwork: false
+      dnsPolicy: dummyDnsPolicy
+      hostAliases:
+        - ip: 0.0.0.0
+          hostnames:
+            - example00.com
+            - example01.com
+        - ip: 0.0.0.1
+          hostnames:
+            - example10.com
+            - example11.com
+      nodeSelector:
+        masterNodeSelectorKey1: workerNodeSelectorVal1
+        masterNodeSelectorKey2: workerNodeSelectorVal2
+        globalNodeSelectorKey1: globalNodeSelectorVal1
+        globalNodeSelectorKey2: globalNodeSelectorVal2
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "role"
+                    operator: In
+                    values:
+                      - alluxio-worker
+              topologyKey: "kubernetes.io/hostname"
+        nodeAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - preference:
+              matchExpressions:
+              - key: dummyWorkerAffinityKey2
+                operator: In
+                values:
+                - dummyWorkerAffinityVal3
+            weight: 1
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: dummyWorkerAffinityKey1
+                operator: In
+                values:
+                - dummyWorkerAffinityVal1
+                - dummyWorkerAffinityVal2
+      tolerations:
+        - effect: NoSchedule
+          key: workerTolerationsKey0
+          operator: Equal
+          value: workerTolerationsVal0
+        - effect: NoExecute
+          key: workerTolerationsKey1
+          operator: Exists
+          value: workerTolerationsVal1
+        - effect: NoSchedule
+          key: globalTolerationsKey0
+          operator: Equal
+          value: globalTolerationsVal0
+        - effect: NoExecute
+          key: globalTolerationsKey1
+          operator: Exists
+          value: globalTolerationsVal1
+      securityContext:
+        runAsUser: 1000
+        runAsGroup: 1000
+        fsGroup: 1000
+      serviceAccountName: dummyServiceAccountName
+      imagePullSecrets:
+        - name: dummySecret1
+        - name: dummySecret2
+      initContainers:
+      - name: wait-master
+        image: dummy/dummy:dummy
+        command: [ "/bin/sh", "-c" ]
+        args:
+          - until nslookup dummy-alluxio-master-0;
+            do sleep 2;
+            done
+      containers:
+        - name: alluxio-worker
+          image: dummy/dummy:dummy
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 4
+              memory: 4Gi
+            requests:
+              cpu: 1
+              memory: 2Gi
+          command: ["tini", "--", "/entrypoint.sh"]
+          args:
+            - worker-only
+            - --no-format
+          env:
+          - name: ALLUXIO_WORKER_HOSTNAME
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+          - name: "workerEnvKey1"
+            value: "workerEnvVal1"
+          - name: "workerEnvKey2"
+            value: "workerEnvVal2"
+          readinessProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: 11
+            periodSeconds: 11
+            timeoutSeconds: 2
+            failureThreshold: 4
+            successThreshold: 2
+          livenessProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: 16
+            periodSeconds: 31
+            timeoutSeconds: 6
+            failureThreshold: 2
+          startupProbe:
+            tcpSocket:
+              port: rpc
+            initialDelaySeconds: 16
+            periodSeconds: 31
+            timeoutSeconds: 6
+            failureThreshold: 3
+          ports:
+          - containerPort: 29998
+            name: rpc
+          - containerPort: 30001
+            name: web
+          volumeMounts:
+            - name: dummy-alluxio-alluxio-conf
+              mountPath: /opt/alluxio/conf
+            - name: dummy-alluxio-metastore-volume
+              mountPath: /mnt/alluxio/metastore            
+            - name: dummySecretWorker1-volume
+              mountPath: /dummyPath1
+              readOnly: true
+            - name: dummySecretWorker2-volume
+              mountPath: /dummyPath2
+              readOnly: true            
+            - name: dummyConfigMapWorker1-volume
+              mountPath: /dummyPath1
+              readOnly: true
+            - name: dummyConfigMapWorker2-volume
+              mountPath: /dummyPath2
+              readOnly: true            
+            - name: dummyPvcWorker1-volume
+              mountPath: /dummyPath1
+              readOnly: false
+            - name: dummyPvcWorker2-volume
+              mountPath: /dummyPath2
+              readOnly: false
+            - mountPath: /mnt/alluxio/pagestore
+              name: dummy-alluxio-pagestore-volume
+      restartPolicy: Always
+      volumes:
+        - name: dummy-alluxio-alluxio-conf
+          configMap:
+            name: dummy-alluxio-alluxio-conf
+        - name: dummy-alluxio-metastore-volume
+          persistentVolumeClaim:
+            claimName: dummy-alluxio-metastore-pvc        
+        - name: dummySecretWorker1-volume
+          secret:
+            secretName: dummySecretWorker1
+            defaultMode: 256
+        - name: dummySecretWorker2-volume
+          secret:
+            secretName: dummySecretWorker2
+            defaultMode: 256        
+        - name: dummyConfigMapWorker1-volume
+          configMap:
+            name: dummyConfigMapWorker1
+        - name: dummyConfigMapWorker2-volume
+          configMap:
+            name: dummyConfigMapWorker2        
+        - name: dummyPvcWorker1-volume
+          persistentVolumeClaim:
+            claimName: dummyPvcWorker1
+        - name: dummyPvcWorker2-volume
+          persistentVolumeClaim:
+            claimName: dummyPvcWorker2
+        - name: dummy-alluxio-pagestore-volume
+          persistentVolumeClaim:
+            claimName: dummy-alluxio-pagestore-pvc
