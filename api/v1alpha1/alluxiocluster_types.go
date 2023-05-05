@@ -149,10 +149,11 @@ type FuseSpec struct {
 }
 
 type CsiSpec struct {
-	ControllerPlugin ControllerPluginSpec `json:"controllerPlugin,omitempty" yaml:"controllerPlugin,omitempty"`
-	Enabled          bool                 `json:"enabled,omitempty" yaml:"enabled,omitempty"`
-	ImagePullPolicy  string               `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
-	NodePlugin       NodePluginSpec       `json:"nodePlugin,omitempty" yaml:"nodePlugin,omitempty"`
+	ControllerPlugin   ControllerPluginSpec `json:"controllerPlugin,omitempty" yaml:"controllerPlugin,omitempty"`
+	CreateStorageClass bool                 `json:"createStorageClass,omitempty" yaml:"createStorageClass,omitempty"`
+	Enabled            bool                 `json:"enabled,omitempty" yaml:"enabled,omitempty"`
+	ImagePullPolicy    string               `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
+	NodePlugin         NodePluginSpec       `json:"nodePlugin,omitempty" yaml:"nodePlugin,omitempty"`
 }
 
 type ControllerPluginSpec struct {

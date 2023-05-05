@@ -122,6 +122,8 @@ spec:
                             type: object
                         type: object
                     type: object
+                  createStorageClass:
+                    type: boolean
                   enabled:
                     type: boolean
                   imagePullPolicy:
