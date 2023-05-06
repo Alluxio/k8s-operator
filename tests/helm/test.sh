@@ -107,7 +107,7 @@ function verifyCsiTemplate {
     echo "Alluxio csi controller template is not rendered as expected."
     return 1
   fi
-  local rbac_relative_path="csi/controller-rbac.yaml"
+  local rbac_relative_path="csi/rbac.yaml"
   helm template --name-template dummy "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${controller_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${controller_relative_path}"
   cmp --silent "${TARGET_DIR}/${controller_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${controller_relative_path}"
   if [[ $? -ne 0 ]]; then
