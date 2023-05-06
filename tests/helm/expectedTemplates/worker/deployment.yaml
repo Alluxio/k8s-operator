@@ -118,6 +118,19 @@ spec:
         - name: dummySecret1
         - name: dummySecret2
       initContainers:
+      - name: path-permission
+        image: dummy/dummy:dummy
+        imagePullPolicy: IfNotPresent
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        command: [ "chown", "-R" ]
+        args:
+          - 1000:1000
+          - /opt/alluxio/logs
+        volumeMounts:
+          - name: dummy-alluxio-worker-log-volume
+            mountPath: /opt/alluxio/logs
       - name: wait-master
         image: dummy/dummy:dummy
         command: [ "/bin/sh", "-c" ]
@@ -126,6 +139,17 @@ spec:
             do sleep 2;
             done
       containers:
+        - name: log-container
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          command: ["sleep", "infinity"]
+          volumeMounts:
+            - name: dummy-alluxio-worker-log-volume
+              mountPath: /opt/alluxio/logs
         - name: alluxio-worker
           image: dummy/dummy:dummy
           imagePullPolicy: IfNotPresent
@@ -179,6 +203,10 @@ spec:
           volumeMounts:
             - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
+            - name: dummy-alluxio-worker-log-volume
+              mountPath: /opt/alluxio/logs
+            - mountPath: /mnt/alluxio/pagestore
+              name: dummy-alluxio-pagestore-volume
             - name: dummy-alluxio-metastore-volume
               mountPath: /mnt/alluxio/metastore            
             - name: dummySecretWorker1-volume
@@ -199,13 +227,15 @@ spec:
             - name: dummyPvcWorker2-volume
               mountPath: /dummyPath2
               readOnly: false
-            - mountPath: /mnt/alluxio/pagestore
-              name: dummy-alluxio-pagestore-volume
       restartPolicy: Always
       volumes:
         - name: dummy-alluxio-alluxio-conf
           configMap:
             name: dummy-alluxio-alluxio-conf
+        - name: dummy-alluxio-worker-log-volume
+          hostPath:
+            path: /mnt/alluxio/logs/worker
+            type: DirectoryOrCreate
         - name: dummy-alluxio-metastore-volume
           persistentVolumeClaim:
             claimName: dummy-alluxio-metastore-pvc        
