@@ -101,6 +101,17 @@ spec:
             - name: {{ $alluxioProxyLogVolumeName }}
               mountPath: {{ $alluxioProxyLogDir }}
       containers:
+        - name: log-container
+          image: busybox:1.36
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          command: ["sleep", "infinity"]
+          volumeMounts:
+            - name: {{ $alluxioProxyLogVolumeName }}
+              mountPath: {{ $alluxioProxyLogDir }}
         - name: alluxio-proxy
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
