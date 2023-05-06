@@ -15,6 +15,8 @@
 {{- $workerRoleName := "alluxio-worker"}}
 {{ $metastoreVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "metastore") }}
 {{ $pagestoreVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "pagestore") }}
+{{- $alluxioWorkerLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "worker-log") }}
+{{- $alluxioWorkerLogDir := include "alluxio.basePath" "/logs"}}
 
 apiVersion: apps/v1
 kind: Deployment
@@ -99,6 +101,26 @@ spec:
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
       initContainers:
+      - name: path-permission
+        image: {{ .Values.image }}:{{ .Values.imageTag }}
+        imagePullPolicy: {{ .Values.imagePullPolicy }}
+        securityContext:
+          runAsUser: 0
+          runAsGroup: 0
+        command: [ "chown", "-R" ]
+        args:
+          - {{ .Values.user }}:{{ .Values.group }}
+          - {{ $alluxioWorkerLogDir }}
+          {{- if eq .Values.pagestore.type "hostPath" }}
+          - {{ $pagestoreVolumeName }}
+          {{- end }}
+        volumeMounts:
+          - name: {{ $alluxioWorkerLogVolumeName }}
+            mountPath: {{ $alluxioWorkerLogDir }}
+          {{- if eq .Values.pagestore.type "hostPath" }}
+          - name: {{ $pagestoreVolumeName }}
+            mountPath: {{ include "alluxio.mount.basePath" "/pagestore"}}
+          {{- end }}
       - name: wait-master
         image: {{ .Values.image }}:{{ .Values.imageTag }}
         command: [ "/bin/sh", "-c" ]
@@ -160,6 +182,10 @@ spec:
           volumeMounts:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
+            - name: {{ $alluxioWorkerLogVolumeName }}
+              mountPath: {{ $alluxioWorkerLogDir }}
+            - mountPath: {{ include "alluxio.mount.basePath" "/pagestore"}}
+              name: {{ $pagestoreVolumeName }}
             {{- if .Values.metastore.enabled }}
             - name: {{ $metastoreVolumeName }}
               mountPath: {{ include "alluxio.mount.basePath" "/metastore"}}
@@ -173,15 +199,15 @@ spec:
             {{- if .Values.pvcMounts }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.pvcMounts.worker "readOnly" false) | indent 12 }}
             {{- end }}
-            {{- if .Values.pagestore }}
-            - mountPath: {{ include "alluxio.mount.basePath" "/pagestore"}}
-              name: {{ $pagestoreVolumeName }}
-            {{- end }}
       restartPolicy: Always
       volumes:
         - name: {{ $fullName }}-alluxio-conf
           configMap:
             name: {{ $fullName }}-alluxio-conf
+        - name: {{ $alluxioWorkerLogVolumeName }}
+          hostPath:
+            path: {{ .Values.worker.hostPathForLogs }}
+            type: DirectoryOrCreate
         {{- if .Values.metastore.enabled }}
         - name: {{ $metastoreVolumeName }}
           persistentVolumeClaim:
@@ -197,11 +223,11 @@ spec:
 {{- include "alluxio.persistentVolumeClaims" .Values.pvcMounts.worker | indent 8 }}
         {{- end }}
         {{- if .Values.pagestore }}
-        {{- if eq .Values.pagestore.type "hostPath"}}
+        {{- if eq .Values.pagestore.type "hostPath" }}
         - name: {{ $pagestoreVolumeName }}
           hostPath:
             path: {{ .Values.pagestore.hostPath }}
-            type: Directory
+            type: DirectoryOrCreate
         {{- else if eq .Values.pagestore.type "persistentVolumeClaim" }}
         - name: {{ $pagestoreVolumeName }}
           persistentVolumeClaim:
