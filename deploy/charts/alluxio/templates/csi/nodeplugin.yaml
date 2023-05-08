@@ -41,7 +41,7 @@ spec:
         heritage: {{ .Release.Service }}
         role: alluxio-csi-nodeplugin
     spec:
-      serviceAccountName: alluxio-csi-sa
+      serviceAccountName: {{ include "alluxio.csi.serviceAccountName" . }}
       hostNetwork: {{ .Values.hostNetwork }}
       dnsPolicy: {{ .Values.dnsPolicy | default (.Values.hostNetwork | ternary "ClusterFirstWithHostNet" "ClusterFirst") }}
       {{- if .Values.imagePullSecrets }}
