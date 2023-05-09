@@ -40,7 +40,7 @@ spec:
         heritage: Helm
         role: alluxio-csi-nodeplugin
     spec:
-      serviceAccountName: csi-controller-sa
+      serviceAccountName: alluxio-csi-sa
       hostNetwork: false
       dnsPolicy: dummyDnsPolicy
       imagePullSecrets:

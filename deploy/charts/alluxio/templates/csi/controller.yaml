@@ -43,7 +43,7 @@ spec:
         heritage: {{ .Release.Service }}
         role: alluxio-csi-controller
     spec:
-      serviceAccountName: csi-controller-sa
+      serviceAccountName: {{ include "alluxio.csi.serviceAccountName" . }}
       hostNetwork: {{ .Values.hostNetwork }}
       dnsPolicy: {{ .Values.dnsPolicy | default (.Values.hostNetwork | ternary "ClusterFirstWithHostNet" "ClusterFirst") }}
       {{- if .Values.imagePullSecrets }}

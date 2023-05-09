@@ -15,7 +15,7 @@
 apiVersion: v1
 kind: ServiceAccount
 metadata:
-  name: alluxio-csi-sa
+  name: {{ include "alluxio.csi.serviceAccountName" . }}
   namespace: {{ .Release.Namespace }}
 ---
 
@@ -53,7 +53,7 @@ metadata:
   name: alluxio-csi-provisioner-binding
 subjects:
   - kind: ServiceAccount
-    name: alluxio-csi-sa
+    name: {{ include "alluxio.csi.serviceAccountName" . }}
     namespace: {{ .Release.Namespace }}
 roleRef:
   kind: ClusterRole
