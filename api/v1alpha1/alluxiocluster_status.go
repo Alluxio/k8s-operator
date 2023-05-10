@@ -16,6 +16,7 @@ type ClusterPhase string
 const (
 	ClusterPhaseNone               ClusterPhase = ""
 	ClusterPhaseCreatingOrUpdating ClusterPhase = "Creating/Updating"
+	ClusterPhasePending            ClusterPhase = "Pending"
 	ClusterPhaseReady              ClusterPhase = "Ready"
 )
 

@@ -17,7 +17,6 @@ import (
 	"github.com/alluxio/k8s-operator/pkg/logger"
 )
 
-// TODO: shall we free worker space when deleting datatset?
 func DeleteDatasetIfExist(req ctrl.Request) (ctrl.Result, error) {
 	logger.Infof("Uninstalling Dataset %s.", req.NamespacedName.String())
 

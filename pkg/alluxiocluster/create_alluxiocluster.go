@@ -70,7 +70,7 @@ func CreateAlluxioClusterIfNotExist(ctx AlluxioClusterReconcileReqCtx) error {
 	}
 	if err := utils.HelmInstall(helmCtx); err != nil {
 		logger.Errorf("error installing helm release. Uninstalling...")
-		if _, err := DeleteAlluxioClusterIfExist(ctx); err != nil {
+		if err := DeleteAlluxioClusterIfExist(ctx.NamespacedName); err != nil {
 			logger.Errorf("failed to delete failed helm release %s: %v", ctx.NamespacedName.String(), err)
 			return err
 		}

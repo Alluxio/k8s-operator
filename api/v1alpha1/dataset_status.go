@@ -14,6 +14,7 @@ package v1alpha1
 type DatasetPhase string
 
 const (
+	DatasetPhaseNotExist DatasetPhase = "non-exist"
 	DatasetPhaseNone     DatasetPhase = ""
 	DatasetPhasePending  DatasetPhase = "Pending"
 	DatasetPhaseBounding DatasetPhase = "Bounding"
@@ -21,5 +22,6 @@ const (
 )
 
 type DatasetStatus struct {
-	Phase DatasetPhase `json:"phase"`
+	Phase              DatasetPhase `json:"phase"`
+	AlluxioClusterName string       `json:"alluxioCluster"`
 }

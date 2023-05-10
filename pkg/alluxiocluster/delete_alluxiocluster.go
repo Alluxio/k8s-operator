@@ -14,35 +14,34 @@ package alluxiocluster
 import (
 	"os"
 
-	ctrl "sigs.k8s.io/controller-runtime"
+	"k8s.io/apimachinery/pkg/types"
 
-	alluxiov1alpha1 "github.com/alluxio/k8s-operator/api/v1alpha1"
 	"github.com/alluxio/k8s-operator/pkg/logger"
 	"github.com/alluxio/k8s-operator/pkg/utils"
 )
 
-func DeleteAlluxioClusterIfExist(ctx AlluxioClusterReconcileReqCtx) (ctrl.Result, error) {
-	logger.Infof("Uninstalling Alluxio cluster %s.", ctx.NamespacedName.String())
+func DeleteAlluxioClusterIfExist(namespacedName types.NamespacedName) error {
+	logger.Infof("Uninstalling Alluxio cluster %s.", namespacedName.String())
 
 	helmCtx := utils.HelmContext{
-		ReleaseName: ctx.Name,
-		Namespace:   ctx.Namespace,
+		ReleaseName: namespacedName.Name,
+		Namespace:   namespacedName.Namespace,
 	}
 	if err := utils.HelmDeleteIfExist(helmCtx); err != nil {
-		logger.Errorf("failed to delete helm release %s: %v", ctx.NamespacedName.String(), err)
-		return ctrl.Result{}, err
+		logger.Errorf("failed to delete helm release %s: %v", namespacedName.String(), err)
+		return err
 	}
-
-	ctx.Dataset.Status.Phase = alluxiov1alpha1.DatasetPhasePending
-	if err := updateDatasetStatus(ctx); err != nil {
-		return ctrl.Result{}, err
-	}
-	return ctrl.Result{}, nil
+	return nil
 }
 
-func deleteConfYamlFile(ctx AlluxioClusterReconcileReqCtx) error {
-	confYamlFilePath := utils.GetConfYamlPath(ctx.NamespacedName)
+func deleteConfYamlFileIfExist(namespacedName types.NamespacedName) error {
+	confYamlFilePath := utils.GetConfYamlPath(namespacedName)
+	if _, err := os.Stat(confYamlFilePath); err != nil && os.IsNotExist(err) {
+		logger.Errorf("Error getting information of configuration yaml file. %v", err)
+		return err
+	}
 	if err := os.Remove(confYamlFilePath); err != nil {
+		logger.Infof("Failed to delete configuration yaml file. You may need to manually delete it to avoid unexpected behavior. %v", err)
 		return err
 	}
 	return nil
