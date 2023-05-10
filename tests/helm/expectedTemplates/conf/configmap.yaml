@@ -18,7 +18,7 @@ metadata:
   labels:
     name: dummy-alluxio-alluxio-conf
     app: alluxio
-    chart: alluxio-1.0.0
+    chart: alluxio-0.7.0
     release: dummy
     heritage: Helm
 data:
