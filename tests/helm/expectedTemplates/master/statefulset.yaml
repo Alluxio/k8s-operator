@@ -122,17 +122,6 @@ spec:
           - name: dummy-alluxio-journal-volume
             mountPath: /mnt/alluxio/journal
       containers:
-        - name: log-container
-          image: busybox:1.36
-          imagePullPolicy: IfNotPresent
-          resources:
-            limits:
-              cpu: 100m
-              memory: 100Mi
-          command: ["sleep", "infinity"]
-          volumeMounts:
-            - name: dummy-alluxio-master-log-volume
-              mountPath: /opt/alluxio/logs
         - name: alluxio-master
           image: dummy/dummy:dummy
           imagePullPolicy: IfNotPresent

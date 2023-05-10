@@ -110,7 +110,9 @@ spec:
         command: [ "chown", "-R" ]
         args:
           - {{ .Values.user }}:{{ .Values.group }}
+          {{- if .Values.hostPathForLogging }}
           - {{ $alluxioWorkerLogDir }}
+          {{- end }}
           {{- if eq .Values.pagestore.type "hostPath" }}
           - {{ $pagestoreVolumeName }}
           {{- end }}
@@ -129,17 +131,6 @@ spec:
             do sleep 2;
             done
       containers:
-        - name: log-container
-          image: busybox:1.36
-          imagePullPolicy: IfNotPresent
-          resources:
-            limits:
-              cpu: 100m
-              memory: 100Mi
-          command: ["sleep", "infinity"]
-          volumeMounts:
-            - name: {{ $alluxioWorkerLogVolumeName }}
-              mountPath: {{ $alluxioWorkerLogDir }}
         - name: alluxio-worker
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -193,8 +184,10 @@ spec:
           volumeMounts:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
+            {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioWorkerLogVolumeName }}
               mountPath: {{ $alluxioWorkerLogDir }}
+            {{- end }}
             - mountPath: {{ include "alluxio.mount.basePath" "/pagestore"}}
               name: {{ $pagestoreVolumeName }}
             {{- if .Values.metastore.enabled }}
@@ -215,10 +208,12 @@ spec:
         - name: {{ $fullName }}-alluxio-conf
           configMap:
             name: {{ $fullName }}-alluxio-conf
+        {{- if .Values.hostPathForLogging }}
         - name: {{ $alluxioWorkerLogVolumeName }}
           hostPath:
             path: {{ .Values.worker.hostPathForLogs }}
             type: DirectoryOrCreate
+        {{- end }}
         {{- if .Values.metastore.enabled }}
         - name: {{ $metastoreVolumeName }}
           persistentVolumeClaim:

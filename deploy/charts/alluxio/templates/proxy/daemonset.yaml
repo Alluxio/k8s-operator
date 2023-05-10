@@ -86,6 +86,7 @@ spec:
       {{- if .Values.imagePullSecrets }}
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
+      {{- if .Values.hostPathForLogging }}
       initContainers:
         - name: path-permission
           image: {{ .Values.image }}:{{ .Values.imageTag }}
@@ -100,18 +101,8 @@ spec:
           volumeMounts:
             - name: {{ $alluxioProxyLogVolumeName }}
               mountPath: {{ $alluxioProxyLogDir }}
+      {{- end }}
       containers:
-        - name: log-container
-          image: busybox:1.36
-          imagePullPolicy: IfNotPresent
-          resources:
-            limits:
-              cpu: 100m
-              memory: 100Mi
-          command: ["sleep", "infinity"]
-          volumeMounts:
-            - name: {{ $alluxioProxyLogVolumeName }}
-              mountPath: {{ $alluxioProxyLogDir }}
         - name: alluxio-proxy
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -136,8 +127,10 @@ spec:
           volumeMounts:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
+            {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioProxyLogVolumeName }}
               mountPath: {{ $alluxioProxyLogDir }}
+            {{- end }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.proxy "readOnly" true) | indent 12 }}
             {{- end }}
@@ -151,10 +144,12 @@ spec:
         - name: {{ $fullName }}-alluxio-conf
           configMap:
             name: {{ $fullName }}-alluxio-conf
+        {{- if .Values.hostPathForLogging }}
         - name: {{ $alluxioProxyLogVolumeName }}
           hostPath:
             path: {{ .Values.proxy.hostPathForLogs }}
             type: DirectoryOrCreate
+        {{- end }}
               {{- if .Values.secrets }}
       {{- include "alluxio.secretVolumes" .Values.secrets.proxy | indent 8 }}
               {{- end }}

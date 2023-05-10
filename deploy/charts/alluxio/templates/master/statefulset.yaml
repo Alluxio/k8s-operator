@@ -99,11 +99,15 @@ spec:
         command: ["chown", "-R"]
         args:
           - {{ .Values.user }}:{{ .Values.group }}
+          {{- if .Values.hostPathForLogging }}
           - {{ $alluxioMasterLogDir }}
+          {{- end }}
           - {{ $alluxioJournalDir }}
         volumeMounts:
+          {{- if .Values.hostPathForLogging }}
           - name: {{ $alluxioMasterLogVolumeName }}
             mountPath: {{ $alluxioMasterLogDir }}
+          {{- end }}
           - name: {{ $alluxioJournalVolumeName }}
             mountPath: {{ $alluxioJournalDir }}
       {{- if .Values.journal.runFormat}}
@@ -118,17 +122,6 @@ spec:
             mountPath: {{ $alluxioJournalDir }}
       {{- end }}
       containers:
-        - name: log-container
-          image: busybox:1.36
-          imagePullPolicy: IfNotPresent
-          resources:
-            limits:
-              cpu: 100m
-              memory: 100Mi
-          command: ["sleep", "infinity"]
-          volumeMounts:
-            - name: {{ $alluxioMasterLogVolumeName }}
-              mountPath: {{ $alluxioMasterLogDir }}
         - name: alluxio-master
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -187,8 +180,10 @@ spec:
               mountPath: /opt/alluxio/conf
             - name: {{ $alluxioJournalVolumeName }}
               mountPath: {{ $alluxioJournalDir }}
+            {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioMasterLogVolumeName }}
               mountPath: {{ $alluxioMasterLogDir }}
+            {{- end }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.master "readOnly" true) | indent 12 }}
             {{- end }}
@@ -218,10 +213,12 @@ spec:
             path: {{ .Values.journal.hostPath }}
             type: DirectoryOrCreate
         {{- end }}
+        {{- if .Values.hostPathForLogging }}
         - name: {{ $alluxioMasterLogVolumeName }}
           hostPath:
             path: {{ .Values.master.hostPathForLogs }}
             type: DirectoryOrCreate
+        {{- end }}
   {{- if eq .Values.journal.type "persistentVolumeClaim" }}
   volumeClaimTemplates:
     - metadata:

@@ -78,6 +78,9 @@ jvmOptions:
 
 ## Mounts ##
 
+# Whether to use hostPath volume to persist Alluxio log.
+hostPathForLogging: true
+
 # Mount Persistent Volume Claims, ConfigMaps, and Secrets into different Alluxio components.
 # Format:
 # [pvcMounts | configMaps | secrets]:

@@ -84,6 +84,7 @@ spec:
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
       initContainers:
+        {{- if .Values.hostPathForLogging }}
         - name: path-permission
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -97,6 +98,7 @@ spec:
           volumeMounts:
             - name: {{ $alluxioFuseLogVolumeName }}
               mountPath: {{ $alluxioFuseLogDir }}
+        {{- end }}
         - name: wait-master
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           command: ["/bin/sh", "-c"]
@@ -108,21 +110,9 @@ spec:
           - name: {{ $fullName }}-alluxio-conf
             mountPath: /opt/alluxio/conf
       containers:
-        - name: log-container
-          image: busybox:1.36
-          imagePullPolicy: IfNotPresent
-          resources:
-            limits:
-              cpu: 100m
-              memory: 100Mi
-          command: ["sleep", "infinity"]
-          volumeMounts:
-            - name: {{ $alluxioFuseLogVolumeName }}
-              mountPath: {{ $alluxioFuseLogDir }}
         - name: alluxio-fuse
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
-          resources:
           {{- if .Values.fuse.resources }}
 {{ include "alluxio.resources" .Values.fuse.resources | indent 10 }}
           {{- end }}
@@ -155,8 +145,10 @@ spec:
               mountPropagation: Bidirectional
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
+            {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioFuseLogVolumeName }}
               mountPath: {{ $alluxioFuseLogDir }}
+            {{- end }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.fuse "readOnly" true) | indent 12 }}
             {{- end }}
@@ -175,10 +167,12 @@ spec:
         - name: {{ $fullName }}-alluxio-conf
           configMap:
             name: {{ $fullName }}-alluxio-conf
+        {{- if .Values.hostPathForLogging }}
         - name: {{ $alluxioFuseLogVolumeName }}
           hostPath:
             path: {{ .Values.fuse.hostPathForLogs }}
             type: DirectoryOrCreate
+        {{- end }}
         {{- if .Values.secrets }}
 {{- include "alluxio.secretVolumes" .Values.secrets.fuse | indent 8 }}
         {{- end }}
