@@ -18,7 +18,7 @@ metadata:
   labels:
     name: dummy-alluxio-proxy
     app: alluxio
-    chart: alluxio-1.0.0
+    chart: alluxio-0.7.0
     release: dummy
     heritage: Helm
     role: alluxio-proxy
@@ -27,7 +27,7 @@ spec:
     matchLabels:
       name: dummy-alluxio-proxy
       app: alluxio
-      chart: alluxio-1.0.0
+      chart: alluxio-0.7.0
       release: dummy
       heritage: Helm
       role: alluxio-proxy
@@ -36,7 +36,7 @@ spec:
       labels:
         name: dummy-alluxio-proxy
         app: alluxio
-        chart: alluxio-1.0.0
+        chart: alluxio-0.7.0
         release: dummy
         heritage: Helm
         role: alluxio-proxy

@@ -17,7 +17,7 @@ metadata:
   labels:
     name: dummy-alluxio-pagestore-pvc
     app: alluxio
-    chart: alluxio-1.0.0
+    chart: alluxio-0.7.0
     release: dummy
     heritage: Helm
 spec:
@@ -31,6 +31,6 @@ spec:
     matchLabels:
       name: dummy-alluxio-pagestore-pvc
       app: alluxio
-      chart: alluxio-1.0.0
+      chart: alluxio-0.7.0
       release: dummy
       heritage: Helm
