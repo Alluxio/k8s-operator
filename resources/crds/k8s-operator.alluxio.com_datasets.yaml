@@ -65,12 +65,9 @@ spec:
             type: object
           status:
             properties:
-              alluxioCluster:
-                type: string
               phase:
                 type: string
             required:
-            - alluxioCluster
             - phase
             type: object
         type: object
