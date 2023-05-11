@@ -16,6 +16,8 @@
 {{- $chart := include "alluxio.chart" . }}
 {{- $hostMountPath := include "alluxio.mount.basePath" "" }}
 {{- $alluxioFuseMountPoint := include "alluxio.mount.basePath" "/fuse" }}
+{{- $alluxioFuseLogDir := include "alluxio.basePath" "/logs"}}
+{{- $alluxioFuseLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "fuse-log") }}
 
 apiVersion: apps/v1
 kind: DaemonSet
@@ -82,6 +84,21 @@ spec:
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
       initContainers:
+        {{- if .Values.hostPathForLogging }}
+        - name: path-permission
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          command: [ "chown", "-R" ]
+          args:
+            - {{ .Values.user }}:{{ .Values.group }}
+            - {{ $alluxioFuseLogDir }}
+          volumeMounts:
+            - name: {{ $alluxioFuseLogVolumeName }}
+              mountPath: {{ $alluxioFuseLogDir }}
+        {{- end }}
         - name: wait-master
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           command: ["/bin/sh", "-c"]
@@ -96,7 +113,6 @@ spec:
         - name: alluxio-fuse
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
-          resources:
           {{- if .Values.fuse.resources }}
 {{ include "alluxio.resources" .Values.fuse.resources | indent 10 }}
           {{- end }}
@@ -129,6 +145,10 @@ spec:
               mountPropagation: Bidirectional
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
+            {{- if .Values.hostPathForLogging }}
+            - name: {{ $alluxioFuseLogVolumeName }}
+              mountPath: {{ $alluxioFuseLogDir }}
+            {{- end }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.fuse "readOnly" true) | indent 12 }}
             {{- end }}
@@ -147,6 +167,12 @@ spec:
         - name: {{ $fullName }}-alluxio-conf
           configMap:
             name: {{ $fullName }}-alluxio-conf
+        {{- if .Values.hostPathForLogging }}
+        - name: {{ $alluxioFuseLogVolumeName }}
+          hostPath:
+            path: {{ .Values.fuse.hostPathForLogs }}
+            type: DirectoryOrCreate
+        {{- end }}
         {{- if .Values.secrets }}
 {{- include "alluxio.secretVolumes" .Values.secrets.fuse | indent 8 }}
         {{- end }}

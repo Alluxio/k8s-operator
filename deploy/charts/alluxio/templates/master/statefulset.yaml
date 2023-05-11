@@ -17,6 +17,8 @@
 {{- $isHa := gt (int .Values.master.count) 1 }}
 {{- $alluxioJournalVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "journal") }}
 {{- $alluxioJournalDir := include "alluxio.mount.basePath" "/journal"}}
+{{- $alluxioMasterLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "master-log") }}
+{{- $alluxioMasterLogDir := include "alluxio.basePath" "/logs"}}
 
 apiVersion: apps/v1
 kind: StatefulSet
@@ -88,8 +90,7 @@ spec:
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
       initContainers:
-      {{- if eq .Values.journal.type "hostPath" }}
-      - name: journal-dir-permission
+      - name: path-permission
         image: {{ .Values.image }}:{{ .Values.imageTag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         securityContext:
@@ -98,21 +99,27 @@ spec:
         command: ["chown", "-R"]
         args:
           - {{ .Values.user }}:{{ .Values.group }}
+          {{- if .Values.hostPathForLogging }}
+          - {{ $alluxioMasterLogDir }}
+          {{- end }}
           - {{ $alluxioJournalDir }}
         volumeMounts:
+          {{- if .Values.hostPathForLogging }}
+          - name: {{ $alluxioMasterLogVolumeName }}
+            mountPath: {{ $alluxioMasterLogDir }}
+          {{- end }}
           - name: {{ $alluxioJournalVolumeName }}
             mountPath: {{ $alluxioJournalDir }}
-      {{- end }}
       {{- if .Values.journal.runFormat}}
       - name: journal-format
         image: {{ .Values.image }}:{{ .Values.imageTag }}
         imagePullPolicy: {{ .Values.imagePullPolicy }}
         command: ["alluxio","formatJournal"]
         volumeMounts:
-          - name: {{ $alluxioJournalVolumeName }}
-            mountPath: {{ $alluxioJournalDir }}
           - name: {{ $fullName }}-alluxio-conf
             mountPath: /opt/alluxio/conf
+          - name: {{ $alluxioJournalVolumeName }}
+            mountPath: {{ $alluxioJournalDir }}
       {{- end }}
       containers:
         - name: alluxio-master
@@ -173,6 +180,10 @@ spec:
               mountPath: /opt/alluxio/conf
             - name: {{ $alluxioJournalVolumeName }}
               mountPath: {{ $alluxioJournalDir }}
+            {{- if .Values.hostPathForLogging }}
+            - name: {{ $alluxioMasterLogVolumeName }}
+              mountPath: {{ $alluxioMasterLogDir }}
+            {{- end }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.master "readOnly" true) | indent 12 }}
             {{- end }}
@@ -200,6 +211,12 @@ spec:
         - name: {{ $alluxioJournalVolumeName }}
           hostPath:
             path: {{ .Values.journal.hostPath }}
+            type: DirectoryOrCreate
+        {{- end }}
+        {{- if .Values.hostPathForLogging }}
+        - name: {{ $alluxioMasterLogVolumeName }}
+          hostPath:
+            path: {{ .Values.master.hostPathForLogs }}
             type: DirectoryOrCreate
         {{- end }}
   {{- if eq .Values.journal.type "persistentVolumeClaim" }}

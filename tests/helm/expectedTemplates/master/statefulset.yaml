@@ -105,7 +105,7 @@ spec:
         - name: dummySecret1
         - name: dummySecret2
       initContainers:
-      - name: journal-dir-permission
+      - name: path-permission
         image: dummy/dummy:dummy
         imagePullPolicy: IfNotPresent
         securityContext:
@@ -114,8 +114,11 @@ spec:
         command: ["chown", "-R"]
         args:
           - 1000:1000
+          - /opt/alluxio/logs
           - /mnt/alluxio/journal
         volumeMounts:
+          - name: dummy-alluxio-master-log-volume
+            mountPath: /opt/alluxio/logs
           - name: dummy-alluxio-journal-volume
             mountPath: /mnt/alluxio/journal
       containers:
@@ -175,7 +178,9 @@ spec:
             - name: dummy-alluxio-alluxio-conf
               mountPath: /opt/alluxio/conf
             - name: dummy-alluxio-journal-volume
-              mountPath: /mnt/alluxio/journal            
+              mountPath: /mnt/alluxio/journal
+            - name: dummy-alluxio-master-log-volume
+              mountPath: /opt/alluxio/logs            
             - name: dummySecretMaster1-volume
               mountPath: /dummyPath1
               readOnly: true
@@ -222,4 +227,8 @@ spec:
         - name: dummy-alluxio-journal-volume
           hostPath:
             path: /mnt/alluxio/journal
+            type: DirectoryOrCreate
+        - name: dummy-alluxio-master-log-volume
+          hostPath:
+            path: /mnt/alluxio/logs/master
             type: DirectoryOrCreate

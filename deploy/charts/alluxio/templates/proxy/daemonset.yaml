@@ -13,6 +13,8 @@
 {{- $name := include "alluxio.name" . }}
 {{- $fullName := include "alluxio.fullname" . }}
 {{- $chart := include "alluxio.chart" . }}
+{{- $alluxioProxyLogDir := include "alluxio.basePath" "/logs"}}
+{{- $alluxioProxyLogVolumeName := include "alluxio.getVolumeName" (dict "prefix" $fullName "component" "proxy-log") }}
 
 apiVersion: apps/v1
 kind: DaemonSet
@@ -84,6 +86,22 @@ spec:
       {{- if .Values.imagePullSecrets }}
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
+      {{- if .Values.hostPathForLogging }}
+      initContainers:
+        - name: path-permission
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          command: [ "chown", "-R" ]
+          args:
+            - {{ .Values.user }}:{{ .Values.group }}
+            - {{ $alluxioProxyLogDir }}
+          volumeMounts:
+            - name: {{ $alluxioProxyLogVolumeName }}
+              mountPath: {{ $alluxioProxyLogDir }}
+      {{- end }}
       containers:
         - name: alluxio-proxy
           image: {{ .Values.image }}:{{ .Values.imageTag }}
@@ -109,6 +127,10 @@ spec:
           volumeMounts:
             - name: {{ $fullName }}-alluxio-conf
               mountPath: /opt/alluxio/conf
+            {{- if .Values.hostPathForLogging }}
+            - name: {{ $alluxioProxyLogVolumeName }}
+              mountPath: {{ $alluxioProxyLogDir }}
+            {{- end }}
             {{- if .Values.secrets }}
 {{- include "alluxio.volumeMounts" (dict "volumeMounts" .Values.secrets.proxy "readOnly" true) | indent 12 }}
             {{- end }}
@@ -122,6 +144,12 @@ spec:
         - name: {{ $fullName }}-alluxio-conf
           configMap:
             name: {{ $fullName }}-alluxio-conf
+        {{- if .Values.hostPathForLogging }}
+        - name: {{ $alluxioProxyLogVolumeName }}
+          hostPath:
+            path: {{ .Values.proxy.hostPathForLogs }}
+            type: DirectoryOrCreate
+        {{- end }}
               {{- if .Values.secrets }}
       {{- include "alluxio.secretVolumes" .Values.secrets.proxy | indent 8 }}
               {{- end }}

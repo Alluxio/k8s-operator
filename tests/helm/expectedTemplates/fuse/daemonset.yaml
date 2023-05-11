@@ -96,6 +96,19 @@ spec:
         - name: dummySecret1
         - name: dummySecret2
       initContainers:
+        - name: path-permission
+          image: dummy/dummy:dummy
+          imagePullPolicy: IfNotPresent
+          securityContext:
+            runAsUser: 0
+            runAsGroup: 0
+          command: [ "chown", "-R" ]
+          args:
+            - 1000:1000
+            - /opt/alluxio/logs
+          volumeMounts:
+            - name: dummy-alluxio-fuse-log-volume
+              mountPath: /opt/alluxio/logs
         - name: wait-master
           image: dummy/dummy:dummy
           command: ["/bin/sh", "-c"]
@@ -110,7 +123,6 @@ spec:
         - name: alluxio-fuse
           image: dummy/dummy:dummy
           imagePullPolicy: IfNotPresent
-          resources:
           resources:
             limits:
               cpu: 4
@@ -146,7 +158,9 @@ spec:
               mountPath: /mnt/alluxio
               mountPropagation: Bidirectional
             - name: dummy-alluxio-alluxio-conf
-              mountPath: /opt/alluxio/conf            
+              mountPath: /opt/alluxio/conf
+            - name: dummy-alluxio-fuse-log-volume
+              mountPath: /opt/alluxio/logs            
             - name: dummySecretFuse1-volume
               mountPath: /dummyPath1
               readOnly: true
@@ -173,7 +187,11 @@ spec:
             type: DirectoryOrCreate
         - name: dummy-alluxio-alluxio-conf
           configMap:
-            name: dummy-alluxio-alluxio-conf        
+            name: dummy-alluxio-alluxio-conf
+        - name: dummy-alluxio-fuse-log-volume
+          hostPath:
+            path: /mnt/alluxio/logs/fuse
+            type: DirectoryOrCreate        
         - name: dummySecretFuse1-volume
           secret:
             secretName: dummySecretFuse1

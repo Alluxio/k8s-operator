@@ -45,6 +45,10 @@ Create chart name and version as used by the chart label.
 {{- printf "/mnt/alluxio%v" . }}
 {{- end -}}
 
+{{- define "alluxio.basePath" -}}
+{{- printf "/opt/alluxio%v" . }}
+{{- end -}}
+
 {{- define "alluxio.imagePullSecrets" -}}
 imagePullSecrets:
 {{- range $name := .Values.imagePullSecrets }}
