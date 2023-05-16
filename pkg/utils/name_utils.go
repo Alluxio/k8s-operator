@@ -53,6 +53,10 @@ func GetAlluxioConfigMapName(nameOverride, clusterName string) string {
 	return fmt.Sprintf("%s-alluxio-conf", getClusterFullName(nameOverride, clusterName))
 }
 
+func GetLoadConfigmapName(nameOverride, clusterName string) string {
+	return fmt.Sprintf("%s-alluxio-load", getClusterFullName(nameOverride, clusterName))
+}
+
 func GetLoadJobName(loadName string) string {
 	return fmt.Sprintf("%s-load-job", loadName)
 }
