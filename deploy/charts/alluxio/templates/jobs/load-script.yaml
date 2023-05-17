@@ -24,28 +24,43 @@ metadata:
     release: {{ .Release.Name }}
     heritage: {{ .Release.Service }}
 data:
-  load.sh: |-
-    #!/usr/bin/env bash
+  load.go: |-
+    package main
 
-    main() {
-      if [[ $# != 1 ]]; then
-        echo "Load command only takes one argument"
-        exit 1
-      fi
-      exec /opt/alluxio/bin/alluxio fs load $1 --submit
-      waitUntilLoadFinished
+    import (
+        "context"
+        "fmt"
+        "os"
+        "os/exec"
+        "strings"
+        "time"
+    )
+
+    func main() {
+        if len(os.Args) != 2 {
+            panic("Load command only takes one argument")
+        }
+        path := os.Args[1]
+        cmd := exec.Command(fmt.Sprintf("/opt/alluxio/bin/alluxio fs load %s --progress", path))
+        if _, err := cmd.Output(); err != nil {
+            panic(err)
+        }
+        waitUntilLoadFinish(path)
     }
 
-    waitUntilLoadFinished() {
-      while true; do {
-        sleep 15
-        res=$(/opt/alluxio/bin/alluxio fs load $1 --progress)
-        if [[ "${res}" == *"SUCCEEDED"* ]]; then
-          exit 0
-        elif [[ "${res}" == *"FAILED"* ]]; then
-          exit 1
-        fi
-      }
+    func waitUntilLoadFinish(path string) {
+        status := make(chan int, 1)
+        ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+        defer cancel()
+        go func() {
+            for range time.Tick(15 * time.Second) {
+                output, _ := exec.CommandContext(ctx, "/opt/alluxio/bin/alluxio fs load %s --progress", path).Output()
+                if strings.Contains(string(output), "SUCCEEDED") {
+                    status <- 0
+                } else if strings.Contains(string(output), "FAILED") {
+                    status <- 1
+                }
+            }
+        }()
+        os.Exit(<- status)
     }
-
-    main "$@"

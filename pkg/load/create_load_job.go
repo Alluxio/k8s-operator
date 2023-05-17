@@ -12,7 +12,6 @@
 package load
 
 import (
-	"fmt"
 	"os"
 	"time"
 
@@ -70,8 +69,7 @@ func constructLoadJob(alluxio *alluxiov1alpha1.AlluxioCluster, load *alluxiov1al
 	}
 	loadJob.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
 	loadJob.Spec.Template.Spec.ServiceAccountName = alluxio.Spec.ServiceAccountName
-	loadJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", alluxio.Spec.Image, alluxio.Spec.ImageTag)
-	loadJob.Spec.Template.Spec.Containers[0].Command = []string{"/load.sh", load.Spec.Path}
+	loadJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/load.go", load.Spec.Path}
 	alluxioConfigMapName := utils.GetAlluxioConfigMapName(alluxio.Spec.NameOverride, alluxio.Name)
 	loadConfigMapName := utils.GetLoadConfigmapName(alluxio.Spec.NameOverride, alluxio.Name)
 	loadJob.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
