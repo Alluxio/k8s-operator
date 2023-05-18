@@ -34,7 +34,6 @@ spec:
       containers:
         - name: load
           imagePullPolicy: IfNotPresent
-          image: alluxio/k8s-operator-jobs:latest
           env:
             - name: ALLUXIO_CLIENT_HOSTNAME
               valueFrom:
