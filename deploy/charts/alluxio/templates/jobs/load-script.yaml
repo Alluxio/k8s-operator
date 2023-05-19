@@ -30,6 +30,7 @@ data:
     import (
         "context"
         "fmt"
+        "log"
         "os"
         "os/exec"
         "strings"
@@ -41,7 +42,7 @@ data:
             panic("Load command only takes one argument")
         }
         path := os.Args[1]
-        cmd := exec.Command(fmt.Sprintf("/opt/alluxio/bin/alluxio fs load %s --progress", path))
+        cmd := exec.Command(fmt.Sprintf("/opt/alluxio/bin/alluxio fs load %s --submit", path))
         if _, err := cmd.Output(); err != nil {
             panic(err)
         }
@@ -54,11 +55,16 @@ data:
         defer cancel()
         go func() {
             for range time.Tick(15 * time.Second) {
-                output, _ := exec.CommandContext(ctx, "/opt/alluxio/bin/alluxio fs load %s --progress", path).Output()
-                if strings.Contains(string(output), "SUCCEEDED") {
-                    status <- 0
-                } else if strings.Contains(string(output), "FAILED") {
-                    status <- 1
+                output, err := exec.CommandContext(ctx, "/opt/alluxio/bin/alluxio fs load %s --progress", path).CombinedOutput()
+                if err != nil {
+                    log.Printf("Error checking load progress: %v", err.Error())
+                } else {
+                    log.Printf(string(output))
+                    if strings.Contains(string(output), "SUCCEEDED") {
+                        status <- 0
+                    } else if strings.Contains(string(output), "FAILED") {
+                        status <- 1
+                    }
                 }
             }
         }()
