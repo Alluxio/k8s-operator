@@ -36,9 +36,14 @@ func DeleteAlluxioClusterIfExist(namespacedName types.NamespacedName) error {
 
 func deleteConfYamlFileIfExist(namespacedName types.NamespacedName) error {
 	confYamlFilePath := utils.GetConfYamlPath(namespacedName)
-	if _, err := os.Stat(confYamlFilePath); err != nil && os.IsNotExist(err) {
-		logger.Errorf("Error getting information of configuration yaml file. %v", err)
-		return err
+	if _, err := os.Stat(confYamlFilePath); err != nil {
+		if os.IsNotExist(err) {
+			logger.Infof("Configuration file already deleted or never existed.")
+			return nil
+		} else {
+			logger.Errorf("Error getting information of configuration yaml file. %v", err)
+			return err
+		}
 	}
 	if err := os.Remove(confYamlFilePath); err != nil {
 		logger.Infof("Failed to delete configuration yaml file. You may need to manually delete it to avoid unexpected behavior. %v", err)

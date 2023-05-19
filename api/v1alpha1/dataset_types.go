@@ -30,6 +30,7 @@ type DatasetConf struct {
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
 // +kubebuilder:printcolumn:name="DatasetPhase",type="string",JSONPath=`.status.phase`,priority=0
+// +kubebuilder:printcolumn:name="BoundedAlluxioCluster",type="string",JSONPath=`.status.boundedAlluxioCluster`,priority=0
 
 // Dataset is the Schema for the datasets API
 type Dataset struct {
