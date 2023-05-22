@@ -62,27 +62,37 @@ func (r *LoadReconciler) Reconcile(context context.Context, req ctrl.Request) (c
 		return r.deleteJob(ctx)
 	}
 
-	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
-	alluxioNamespacedName := types.NamespacedName{
+	dataset := &alluxiov1alpha1.Dataset{}
+	datasetNamespacedName := types.NamespacedName{
 		Namespace: req.Namespace,
 		Name:      load.Spec.Dataset,
 	}
-	if err := r.Get(context, alluxioNamespacedName, alluxioCluster); err != nil {
+	if err := r.Get(context, datasetNamespacedName, dataset); err != nil {
 		if errors.IsNotFound(err) {
-			logger.Errorf("Dataset %s in namespace %v is not found. Please double check your configuration.", load.Spec.Dataset, req.Namespace)
+			logger.Errorf("Dataset %s is not found. Please double check your configuration.", load.Spec.Dataset)
 			load.Status.Phase = alluxiov1alpha1.LoadPhaseFailed
 			return r.updateLoadStatus(ctx)
 		} else {
-			logger.Errorf("Error getting alluxio cluster %s in namespace %s: %v", load.Spec.Dataset, req.Namespace, err)
+			logger.Errorf("Error getting dataset %s: %v", load.Spec.Dataset, err)
 			return ctrl.Result{}, err
 		}
 	}
-	ctx.AlluxioCluster = alluxioCluster
 
-	if alluxioCluster.Status.Phase != alluxiov1alpha1.ClusterPhaseReady {
+	if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseReady {
 		load.Status.Phase = alluxiov1alpha1.LoadPhaseWaiting
 		return r.updateLoadStatus(ctx)
 	}
+
+	alluxioCluster := &alluxiov1alpha1.AlluxioCluster{}
+	alluxioNamespacedName := types.NamespacedName{
+		Namespace: req.Namespace,
+		Name:      dataset.Status.BoundedAlluxioCluster,
+	}
+	if err := r.Get(context, alluxioNamespacedName, alluxioCluster); err != nil {
+		logger.Errorf("Error getting alluxio cluster %s: %v", alluxioNamespacedName.Name, err)
+		return ctrl.Result{}, err
+	}
+	ctx.AlluxioCluster = alluxioCluster
 
 	switch load.Status.Phase {
 	case alluxiov1alpha1.LoadPhaseNone, alluxiov1alpha1.LoadPhaseWaiting:

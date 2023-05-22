@@ -81,6 +81,7 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 			return ctrl.Result{}, err
 		}
 		ctx.Dataset.Status.Phase = alluxiov1alpha1.DatasetPhasePending
+		ctx.Dataset.Status.BoundedAlluxioCluster = ""
 		if err := updateDatasetStatus(ctx); err != nil {
 			return ctrl.Result{}, err
 		}

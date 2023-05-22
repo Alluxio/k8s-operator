@@ -41,6 +41,7 @@ func UpdateStatus(alluxioClusterCtx AlluxioClusterReconcileReqCtx) (ctrl.Result,
 		if ClusterReady(alluxioClusterCtx) {
 			alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhaseReady
 			datasetNewPhase = alluxiov1alpha1.DatasetPhaseReady
+			alluxioClusterCtx.Dataset.Status.BoundedAlluxioCluster = alluxioClusterCtx.AlluxioCluster.Name
 		} else {
 			alluxioClusterNewPhase = alluxiov1alpha1.ClusterPhaseCreatingOrUpdating
 			datasetNewPhase = alluxiov1alpha1.DatasetPhaseBounding

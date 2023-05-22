@@ -20,7 +20,7 @@ type LoadSpec struct {
 
 // +kubebuilder:object:root=true
 // +kubebuilder:subresource:status
-// +kubebuilder:printcolumn:name="DatasetPhase",type="string",JSONPath=`.status.phase`,priority=0
+// +kubebuilder:printcolumn:name="loadPhase",type="string",JSONPath=`.status.phase`,priority=0
 
 // Load is the Schema for the loads API
 type Load struct {

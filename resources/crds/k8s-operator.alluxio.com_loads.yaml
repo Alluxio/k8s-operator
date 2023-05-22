@@ -27,7 +27,7 @@ spec:
   versions:
   - additionalPrinterColumns:
     - jsonPath: .status.phase
-      name: DatasetPhase
+      name: loadPhase
       type: string
     name: v1alpha1
     schema:

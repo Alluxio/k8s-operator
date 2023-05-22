@@ -29,6 +29,9 @@ spec:
     - jsonPath: .status.phase
       name: DatasetPhase
       type: string
+    - jsonPath: .status.boundedAlluxioCluster
+      name: BoundedAlluxioCluster
+      type: string
     name: v1alpha1
     schema:
       openAPIV3Schema:
@@ -65,9 +68,12 @@ spec:
             type: object
           status:
             properties:
+              boundedAlluxioCluster:
+                type: string
               phase:
                 type: string
             required:
+            - boundedAlluxioCluster
             - phase
             type: object
         type: object
