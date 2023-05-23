@@ -27,7 +27,7 @@ data:
   alluxio-site.properties: |-
     {{- include "alluxio.site.properties" . | nindent 4 }}
   alluxio-env.sh: |-
-    {{- include "alluxio.env" . | nindent 4}}
+    {{- include "alluxio.env" . | nindent 4 }}
   metrics.properties: |-
     {{- include "alluxio.metrics.properties" . | nindent 4 }}
   log4j.properties: |-
