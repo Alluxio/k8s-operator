@@ -80,10 +80,12 @@ func (r *AlluxioClusterReconciler) Reconcile(context context.Context, req ctrl.R
 		if err := DeleteAlluxioClusterIfExist(ctx.NamespacedName); err != nil {
 			return ctrl.Result{}, err
 		}
-		ctx.Dataset.Status.Phase = alluxiov1alpha1.DatasetPhasePending
-		ctx.Dataset.Status.BoundedAlluxioCluster = ""
-		if err := updateDatasetStatus(ctx); err != nil {
-			return ctrl.Result{}, err
+		if dataset.Status.Phase != alluxiov1alpha1.DatasetPhaseNotExist {
+			ctx.Dataset.Status.Phase = alluxiov1alpha1.DatasetPhasePending
+			ctx.Dataset.Status.BoundedAlluxioCluster = ""
+			if err := updateDatasetStatus(ctx); err != nil {
+				return ctrl.Result{}, err
+			}
 		}
 		if err := finalizer.RemoveDummyFinalizerIfExist(r.Client, alluxioCluster, context); err != nil {
 			return ctrl.Result{}, err
