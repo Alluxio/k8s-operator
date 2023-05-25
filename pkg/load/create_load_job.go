@@ -81,7 +81,8 @@ func constructLoadJob(alluxio *alluxiov1alpha1.AlluxioCluster, load *alluxiov1al
 		},
 		{
 			Name:      loadConfigMapName,
-			MountPath: "/load.sh",
+			MountPath: "/load.go",
+			SubPath:   "load.go",
 		},
 	}
 	loadJob.Spec.Template.Spec.Volumes = []corev1.Volume{

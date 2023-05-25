@@ -29,7 +29,6 @@ data:
 
     import (
         "context"
-        "fmt"
         "log"
         "os"
         "os/exec"
@@ -42,7 +41,7 @@ data:
             panic("Load command only takes one argument")
         }
         path := os.Args[1]
-        cmd := exec.Command(fmt.Sprintf("/opt/alluxio/bin/alluxio fs load %s --submit", path))
+        cmd := exec.Command("/opt/alluxio/bin/alluxio", "fs", "load", path, "--submit")
         if _, err := cmd.Output(); err != nil {
             panic(err)
         }
@@ -50,23 +49,21 @@ data:
     }
 
     func waitUntilLoadFinish(path string) {
-        status := make(chan int, 1)
-        ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
-        defer cancel()
-        go func() {
-            for range time.Tick(15 * time.Second) {
-                output, err := exec.CommandContext(ctx, "/opt/alluxio/bin/alluxio fs load %s --progress", path).CombinedOutput()
+        for range time.Tick(15 * time.Second) {
+            func() {
+                ctx, cancel := context.WithTimeout(context.Background(), 10 * time.Second)
+                defer cancel()
+                output, err := exec.CommandContext(ctx, "/opt/alluxio/bin/alluxio", "fs", "load", path, "--progress").CombinedOutput()
                 if err != nil {
-                    log.Printf("Error checking load progress: %v", err.Error())
+    	            log.Printf("Error checking load progress: %v", err.Error())
                 } else {
                     log.Printf(string(output))
                     if strings.Contains(string(output), "SUCCEEDED") {
-                        status <- 0
+                        os.Exit(0)
                     } else if strings.Contains(string(output), "FAILED") {
-                        status <- 1
+                        os.Exit(1)
                     }
                 }
-            }
-        }()
-        os.Exit(<- status)
+            }()
+        }
     }
