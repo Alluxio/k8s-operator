@@ -84,7 +84,6 @@ spec:
 {{ include "alluxio.imagePullSecrets" . | indent 6 }}
       {{- end}}
       initContainers:
-        {{- if .Values.hostPathForLogging }}
         - name: path-permission
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           imagePullPolicy: {{ .Values.imagePullPolicy }}
@@ -94,11 +93,17 @@ spec:
           command: [ "chown", "-R" ]
           args:
             - {{ .Values.user }}:{{ .Values.group }}
+            - {{ $hostMountPath }}
+            {{- if .Values.hostPathForLogging }}
             - {{ $alluxioFuseLogDir }}
+            {{- end }}
           volumeMounts:
+            - name: alluxio-fuse-mount
+              mountPath: {{ $hostMountPath }}
+            {{- if .Values.hostPathForLogging }}
             - name: {{ $alluxioFuseLogVolumeName }}
               mountPath: {{ $alluxioFuseLogDir }}
-        {{- end }}
+            {{- end }}
         - name: wait-master
           image: {{ .Values.image }}:{{ .Values.imageTag }}
           command: ["/bin/sh", "-c"]

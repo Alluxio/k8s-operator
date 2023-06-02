@@ -105,8 +105,11 @@ spec:
           command: [ "chown", "-R" ]
           args:
             - 1000:1000
+            - /mnt/alluxio
             - /opt/alluxio/logs
           volumeMounts:
+            - name: alluxio-fuse-mount
+              mountPath: /mnt/alluxio
             - name: dummy-alluxio-fuse-log-volume
               mountPath: /opt/alluxio/logs
         - name: wait-master
