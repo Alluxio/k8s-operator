@@ -71,20 +71,37 @@ func constructLoadJob(alluxio *alluxiov1alpha1.AlluxioCluster, load *alluxiov1al
 	loadJob.Spec.Template.Spec.ImagePullSecrets = imagePullSecrets
 	loadJob.Spec.Template.Spec.ServiceAccountName = alluxio.Spec.ServiceAccountName
 	loadJob.Spec.Template.Spec.Containers[0].Image = fmt.Sprintf("%s:%s", alluxio.Spec.Image, alluxio.Spec.ImageTag)
-	loadJob.Spec.Template.Spec.Containers[0].Command = []string{"/opt/alluxio/bin/alluxio", "fs", "load", load.Spec.Path}
+	loadJob.Spec.Template.Spec.Containers[0].Command = []string{"go", "run", "/load.go", load.Spec.Path}
+	alluxioConfigMapName := utils.GetAlluxioConfigMapName(alluxio.Spec.NameOverride, alluxio.Name)
+	loadConfigMapName := utils.GetLoadConfigmapName(alluxio.Spec.NameOverride, alluxio.Name)
 	loadJob.Spec.Template.Spec.Containers[0].VolumeMounts = []corev1.VolumeMount{
 		{
-			Name:      utils.GetAlluxioConfigMapName(alluxio.Spec.NameOverride, alluxio.Name),
+			Name:      alluxioConfigMapName,
 			MountPath: "/opt/alluxio/conf",
+		},
+		{
+			Name:      loadConfigMapName,
+			MountPath: "/load.go",
+			SubPath:   "load.go",
 		},
 	}
 	loadJob.Spec.Template.Spec.Volumes = []corev1.Volume{
 		{
-			Name: utils.GetAlluxioConfigMapName(alluxio.Spec.NameOverride, alluxio.Name),
+			Name: alluxioConfigMapName,
 			VolumeSource: corev1.VolumeSource{
 				ConfigMap: &corev1.ConfigMapVolumeSource{
 					LocalObjectReference: corev1.LocalObjectReference{
-						Name: utils.GetAlluxioConfigMapName(alluxio.Spec.NameOverride, alluxio.Name),
+						Name: alluxioConfigMapName,
+					},
+				},
+			},
+		},
+		{
+			Name: loadConfigMapName,
+			VolumeSource: corev1.VolumeSource{
+				ConfigMap: &corev1.ConfigMapVolumeSource{
+					LocalObjectReference: corev1.LocalObjectReference{
+						Name: loadConfigMapName,
 					},
 				},
 			},
