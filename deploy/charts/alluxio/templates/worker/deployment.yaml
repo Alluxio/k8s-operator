@@ -40,6 +40,8 @@ spec:
       release: {{ .Release.Name }}
       heritage: {{ .Release.Service }}
       role: {{ $workerRoleName }}
+  strategy:
+    type: Recreate
   template:
     metadata:
       labels:
