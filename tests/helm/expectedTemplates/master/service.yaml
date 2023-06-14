@@ -18,7 +18,7 @@ metadata:
   name: dummy-alluxio-master-0
   labels:
     app: alluxio
-    chart: alluxio-0.7.0
+    chart: alluxio-1.0.0
     release: dummy
     heritage: Helm
     role: alluxio-master
@@ -46,7 +46,7 @@ metadata:
   name: dummy-alluxio-master-1
   labels:
     app: alluxio
-    chart: alluxio-0.7.0
+    chart: alluxio-1.0.0
     release: dummy
     heritage: Helm
     role: alluxio-master
@@ -74,7 +74,7 @@ metadata:
   name: dummy-alluxio-master-2
   labels:
     app: alluxio
-    chart: alluxio-0.7.0
+    chart: alluxio-1.0.0
     release: dummy
     heritage: Helm
     role: alluxio-master

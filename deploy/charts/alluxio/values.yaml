@@ -17,7 +17,7 @@ nameOverride: alluxio
 
 # Docker Image
 image: alluxio/alluxio
-imageTag: latest
+imageTag: 300
 imagePullPolicy: IfNotPresent
 
 # Image Pull Secrets
@@ -346,7 +346,7 @@ csi:
           memory: 20Mi
     controller:
       image: alluxio/csi
-      imageTag: latest
+      imageTag: 1.0.0
       resources:
         limits:
           cpu: 200m
@@ -357,7 +357,7 @@ csi:
   nodePlugin:
     nodeserver:
       image: alluxio/csi
-      imageTag: latest
+      imageTag: 1.0.0
       resources:
         limits:
           cpu: 200m
