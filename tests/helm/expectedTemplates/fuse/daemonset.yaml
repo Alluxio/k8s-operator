@@ -19,7 +19,7 @@ metadata:
   name: dummy-alluxio-fuse
   labels:
     app: alluxio
-    chart: alluxio-0.7.0
+    chart: alluxio-1.0.0
     release: dummy
     heritage: Helm
     role: alluxio-fuse
@@ -27,7 +27,7 @@ spec:
   selector:
     matchLabels:
       app: alluxio
-      chart: alluxio-0.7.0
+      chart: alluxio-1.0.0
       release: dummy
       heritage: Helm
       role: alluxio-fuse
@@ -35,7 +35,7 @@ spec:
     metadata:
       labels:
         app: alluxio
-        chart: alluxio-0.7.0
+        chart: alluxio-1.0.0
         release: dummy
         heritage: Helm
         role: alluxio-fuse
