@@ -21,10 +21,10 @@ RUN bash -c ./build/generate.sh
 RUN go mod download
 
 WORKDIR /opt/alluxio-k8s-operator/cmd/alluxio
-RUN go build -a -o ../../bin/alluxio-manager
+RUN CGO_ENABLED=0 go build -a -o ../../bin/alluxio-manager
 
 WORKDIR /opt/alluxio-k8s-operator/cmd/dataset
-RUN go build -a -o ../../bin/dataset-manager
+RUN CGO_ENABLED=0 go build -a -o ../../bin/dataset-manager
 
 WORKDIR /opt/helm
 

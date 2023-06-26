@@ -11,12 +11,14 @@
 
 {{- $fullName := include "alluxio.fullname" . }}
 
-apiVersion: storage.k8s.io/v1
-kind: StorageClass
+apiVersion: v1
+kind: PersistentVolumeClaim
 metadata:
-  name: {{ $fullName }}-csi-storage-class
-provisioner: alluxio
-volumeBindingMode: Immediate
-parameters:
-  alluxioClusterName: {{ $fullName }}
-  alluxioClusterNamespace: {{ .Release.Namespace }}
+  name: {{ $fullName }}-alluxio-csi-fuse-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: {{ $fullName }}-csi-storage-class
+  resources:
+    requests:
+      storage: 1Mi # The storage here is only for mount, so the size doesn't matter

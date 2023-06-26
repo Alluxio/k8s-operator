@@ -9,15 +9,15 @@
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
 
-{{ if .Values.csi.enabled -}}
-{{- $name := include "alluxio.name" . }}
-{{- $fullName := include "alluxio.fullname" . }}
-{{- $chart := include "alluxio.chart" . }}
+{{- $name := include "alluxio-csi.name" . }}
+{{- $fullName := include "alluxio-csi.fullname" . }}
+{{- $chart := include "alluxio-csi.chart" . }}
 
 kind: DaemonSet
 apiVersion: apps/v1
 metadata:
   name: {{ $fullName }}-csi-nodeplugin
+  namespace: alluxio-operator
   labels:
     name: {{ $fullName }}-csi-nodeplugin
     app: {{ $name }}
@@ -41,15 +41,15 @@ spec:
         heritage: {{ .Release.Service }}
         role: alluxio-csi-nodeplugin
     spec:
-      serviceAccountName: {{ include "alluxio.csi.serviceAccountName" . }}
+      serviceAccountName: {{ include "alluxio-csi.serviceAccountName" . }}
       hostNetwork: {{ .Values.hostNetwork }}
       dnsPolicy: {{ .Values.dnsPolicy | default (.Values.hostNetwork | ternary "ClusterFirstWithHostNet" "ClusterFirst") }}
       {{- if .Values.imagePullSecrets }}
-{{ include "alluxio.imagePullSecrets" . | indent 6 }}
+{{ include "alluxio-csi.imagePullSecrets" . | indent 6 }}
       {{- end}}
       containers:
         - name: node-driver-registrar
-          image: {{ .Values.csi.nodePlugin.driverRegistrar.image }}
+          image: {{ .Values.nodePlugin.driverRegistrar.image }}
           lifecycle:
             preStop:
               exec:
@@ -58,17 +58,17 @@ spec:
             - --v=5
             - --csi-address=/plugin/csi.sock
             - --kubelet-registration-path=/var/lib/kubelet/plugins/csi-alluxio-plugin/csi.sock
-          {{- if .Values.csi.nodePlugin.driverRegistrar.resources }}
+          {{- if .Values.nodePlugin.driverRegistrar.resources }}
           resources:
-            {{- if .Values.csi.nodePlugin.driverRegistrar.resources.limits }}
+            {{- if .Values.nodePlugin.driverRegistrar.resources.limits }}
             limits:
-              cpu: {{ .Values.csi.nodePlugin.driverRegistrar.resources.limits.cpu }}
-              memory: {{ .Values.csi.nodePlugin.driverRegistrar.resources.limits.memory }}
+              cpu: {{ .Values.nodePlugin.driverRegistrar.resources.limits.cpu }}
+              memory: {{ .Values.nodePlugin.driverRegistrar.resources.limits.memory }}
             {{- end }}
-            {{- if .Values.csi.nodePlugin.driverRegistrar.resources.requests }}
+            {{- if .Values.nodePlugin.driverRegistrar.resources.requests }}
             requests:
-              cpu: {{ .Values.csi.nodePlugin.driverRegistrar.resources.requests.cpu }}
-              memory: {{ .Values.csi.nodePlugin.driverRegistrar.resources.requests.memory }}
+              cpu: {{ .Values.nodePlugin.driverRegistrar.resources.requests.cpu }}
+              memory: {{ .Values.nodePlugin.driverRegistrar.resources.requests.memory }}
             {{- end }}
           {{- end }}
           env:
@@ -82,21 +82,21 @@ spec:
             - name: registration-dir
               mountPath: /registration
         - name: csi-nodeserver
-          {{- if .Values.csi.nodePlugin.nodeserver.resources  }}
+          {{- if .Values.nodePlugin.nodeserver.resources  }}
           resources:
-            {{- if .Values.csi.nodePlugin.nodeserver.resources.limits }}
+            {{- if .Values.nodePlugin.nodeserver.resources.limits }}
             limits:
-              cpu: {{ .Values.csi.nodePlugin.nodeserver.resources.limits.cpu }}
-              memory: {{ .Values.csi.nodePlugin.nodeserver.resources.limits.memory }}
+              cpu: {{ .Values.nodePlugin.nodeserver.resources.limits.cpu }}
+              memory: {{ .Values.nodePlugin.nodeserver.resources.limits.memory }}
             {{- end }}
-            {{- if .Values.csi.nodePlugin.nodeserver.resources.requests }}
+            {{- if .Values.nodePlugin.nodeserver.resources.requests }}
             requests:
-              cpu: {{ .Values.csi.nodePlugin.nodeserver.resources.requests.cpu }}
-              memory: {{ .Values.csi.nodePlugin.nodeserver.resources.requests.memory }}
+              cpu: {{ .Values.nodePlugin.nodeserver.resources.requests.cpu }}
+              memory: {{ .Values.nodePlugin.nodeserver.resources.requests.memory }}
             {{- end }}
           {{- end }}
-          image: {{ .Values.csi.nodePlugin.nodeserver.image }}:{{ .Values.csi.nodePlugin.nodeserver.imageTag }}
-          imagePullPolicy: {{ .Values.csi.imagePullPolicy }}
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
           command: ["/usr/local/bin/alluxio-csi"]
           args :
             - --v=5
@@ -123,8 +123,6 @@ spec:
             - name: pods-mount-dir
               mountPath: /var/lib/kubelet
               mountPropagation: "Bidirectional"
-            - name: {{ $fullName }}-alluxio-conf
-              mountPath: /opt/alluxio/conf
       volumes:
         - name: plugin-dir
           hostPath:
@@ -138,7 +136,3 @@ spec:
           hostPath:
             path: /var/lib/kubelet/plugins_registry
             type: Directory
-        - name: {{ $fullName }}-alluxio-conf
-          configMap:
-            name: {{ $fullName }}-alluxio-conf
-{{- end }}

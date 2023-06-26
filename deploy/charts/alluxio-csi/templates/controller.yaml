@@ -9,16 +9,16 @@
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
 
-{{ if .Values.csi.enabled -}}
-{{- $name := include "alluxio.name" . }}
-{{- $fullName := include "alluxio.fullname" . }}
-{{- $chart := include "alluxio.chart" . }}
+{{- $name := include "alluxio-csi.name" . }}
+{{- $fullName := include "alluxio-csi.fullname" . }}
+{{- $chart := include "alluxio-csi.chart" . }}
 
 ---
 kind: Deployment
 apiVersion: apps/v1
 metadata:
   name: {{ $fullName }}-csi-controller
+  namespace: alluxio-operator
   labels:
     name: {{ $fullName }}-csi-controller
     app: {{ $name }}
@@ -43,11 +43,11 @@ spec:
         heritage: {{ .Release.Service }}
         role: alluxio-csi-controller
     spec:
-      serviceAccountName: {{ include "alluxio.csi.serviceAccountName" . }}
+      serviceAccountName: {{ include "alluxio-csi.serviceAccountName" . }}
       hostNetwork: {{ .Values.hostNetwork }}
       dnsPolicy: {{ .Values.dnsPolicy | default (.Values.hostNetwork | ternary "ClusterFirstWithHostNet" "ClusterFirst") }}
       {{- if .Values.imagePullSecrets }}
-{{ include "alluxio.imagePullSecrets" . | indent 6 }}
+{{ include "alluxio-csi.imagePullSecrets" . | indent 6 }}
       {{- end}}
       securityContext:
         runAsUser: 1001
@@ -55,7 +55,7 @@ spec:
         fsGroup: 1001
       containers:
         - name: csi-provisioner
-          image: {{ .Values.csi.controllerPlugin.provisioner.image }}
+          image: {{ .Values.controllerPlugin.provisioner.image }}
           args:
             - "--v=5"
             - "--csi-address=$(ADDRESS)"
@@ -67,22 +67,22 @@ spec:
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
-          {{- if .Values.csi.controllerPlugin.provisioner.resources  }}
+          {{- if .Values.controllerPlugin.provisioner.resources  }}
           resources:
-            {{- if .Values.csi.controllerPlugin.provisioner.resources.limits }}
+            {{- if .Values.controllerPlugin.provisioner.resources.limits }}
             limits:
-              cpu: {{ .Values.csi.controllerPlugin.provisioner.resources.limits.cpu }}
-              memory: {{ .Values.csi.controllerPlugin.provisioner.resources.limits.memory }}
+              cpu: {{ .Values.controllerPlugin.provisioner.resources.limits.cpu }}
+              memory: {{ .Values.controllerPlugin.provisioner.resources.limits.memory }}
             {{- end }}
-            {{- if .Values.csi.controllerPlugin.provisioner.resources.requests }}
+            {{- if .Values.controllerPlugin.provisioner.resources.requests }}
             requests:
-              cpu: {{ .Values.csi.controllerPlugin.provisioner.resources.requests.cpu }}
-              memory: {{ .Values.csi.controllerPlugin.provisioner.resources.requests.memory }}
+              cpu: {{ .Values.controllerPlugin.provisioner.resources.requests.cpu }}
+              memory: {{ .Values.controllerPlugin.provisioner.resources.requests.memory }}
             {{- end }}
           {{- end }}
         - name: csi-controller
-          image: {{ .Values.csi.controllerPlugin.controller.image }}:{{ .Values.csi.controllerPlugin.controller.imageTag }}
-          imagePullPolicy: {{ .Values.csi.imagePullPolicy }}
+          image: {{ .Values.image }}:{{ .Values.imageTag }}
+          imagePullPolicy: {{ .Values.imagePullPolicy }}
           command: ["/usr/local/bin/alluxio-csi"]
           args:
             - --v=5
@@ -98,25 +98,19 @@ spec:
           volumeMounts:
             - mountPath: /csi
               name: socket-dir
-            - name: {{ $fullName }}-alluxio-conf
-              mountPath: /opt/alluxio/conf
-          {{- if .Values.csi.controllerPlugin.controller.resources  }}
+          {{- if .Values.controllerPlugin.controller.resources  }}
           resources:
-            {{- if .Values.csi.controllerPlugin.controller.resources.limits }}
+            {{- if .Values.controllerPlugin.controller.resources.limits }}
             limits:
-              cpu: {{ .Values.csi.controllerPlugin.controller.resources.limits.cpu }}
-              memory: {{ .Values.csi.controllerPlugin.controller.resources.limits.memory }}
+              cpu: {{ .Values.controllerPlugin.controller.resources.limits.cpu }}
+              memory: {{ .Values.controllerPlugin.controller.resources.limits.memory }}
             {{- end }}
-            {{- if .Values.csi.controllerPlugin.controller.resources.requests }}
+            {{- if .Values.controllerPlugin.controller.resources.requests }}
             requests:
-              cpu: {{ .Values.csi.controllerPlugin.controller.resources.requests.cpu }}
-              memory: {{ .Values.csi.controllerPlugin.controller.resources.requests.memory }}
+              cpu: {{ .Values.controllerPlugin.controller.resources.requests.cpu }}
+              memory: {{ .Values.controllerPlugin.controller.resources.requests.memory }}
             {{- end }}
           {{- end }}
       volumes:
         - name: socket-dir
           emptyDir: {}
-        - name: {{ $fullName }}-alluxio-conf
-          configMap:
-            name: {{ $fullName }}-alluxio-conf
-{{- end }}

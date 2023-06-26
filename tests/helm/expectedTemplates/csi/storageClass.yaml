@@ -10,9 +10,13 @@
 #
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
+
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
 metadata:
-  name: alluxio-csi
+  name: dummy-alluxio-csi-storage-class
 provisioner: alluxio
 volumeBindingMode: Immediate
+parameters:
+  alluxioClusterName: dummy-alluxio
+  alluxioClusterNamespace: default

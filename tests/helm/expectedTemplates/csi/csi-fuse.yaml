@@ -1,0 +1,132 @@
+---
+# Source: alluxio/templates/csi/csi-fuse.yaml
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: dummy-alluxio-csi-fuse-config
+  labels:
+    name: dummy-alluxio-csi-fuse-config
+    app: alluxio
+    chart: alluxio-0.7.0
+    release: dummy
+    heritage: Helm
+data:
+  alluxio-csi-fuse.yaml: |
+    kind: Pod
+    apiVersion: v1
+    metadata:
+      name: dummy-alluxio-fuse
+      labels:
+        name: dummy-alluxio-fuse
+        app: alluxio
+        role: alluxio-fuse
+    spec:
+      securityContext:
+        runAsUser: 0 # required for mounting to csi designated path
+        runAsGroup: 0
+        fsGroup: 0
+      serviceAccountName: dummyServiceAccountName
+      imagePullSecrets:
+    - name: dummySecret1
+    - name: dummySecret2
+      initContainers:
+      - name: wait-master
+        image: dummy/dummy:dummy
+        command: ["/bin/sh", "-c"]
+        args:
+          - until nslookup dummy-alluxio-master-0;
+            do sleep 2;
+            done
+        volumeMounts:
+        - name: dummy-alluxio-alluxio-conf
+          mountPath: /opt/alluxio/conf
+      containers:
+        - name: alluxio-fuse
+          image: dummy/dummy:dummy
+          imagePullPolicy: IfNotPresent
+          resources:
+            limits:
+              cpu: 4
+              memory: 4Gi
+              cpu: 0.5
+              memory: 1Gi
+          command: [ "/entrypoint.sh" ]
+          args:
+            - fuse
+            - /dummy/dataset/path
+            - /mnt/alluxio/fuse
+            - -o allow_other
+            - -o entry_timeout=3600
+            - -o attr_timeout=3600
+          env:
+          - name: "fuseEnvKey1"
+            value: "fuseEnvVal1"
+          - name: "fuseEnvKey2"
+            value: "fuseEnvVal2"
+          securityContext:
+            privileged: true # required by bidirectional mount
+          volumeMounts:
+            - name: dummy-alluxio-alluxio-conf
+              mountPath: /opt/alluxio/conf
+            - name: pods-mount-dir
+              mountPath: /var/lib/kubelet
+              mountPropagation: "Bidirectional"        
+        - name: dummySecretFuse1-volume
+          mountPath: /dummyPath1
+          readOnly: true
+        - name: dummySecretFuse2-volume
+          mountPath: /dummyPath2
+          readOnly: true        
+        - name: dummyConfigMapFuse1-volume
+          mountPath: /dummyPath1
+          readOnly: true
+        - name: dummyConfigMapFuse2-volume
+          mountPath: /dummyPath2
+          readOnly: true        
+        - name: dummyPvcFuse1-volume
+          mountPath: /dummyPath1
+          readOnly: false
+        - name: dummyPvcFuse2-volume
+          mountPath: /dummyPath2
+          readOnly: false
+      restartPolicy: Always
+      volumes:
+        - name: pods-mount-dir
+          hostPath:
+            path: /var/lib/kubelet
+            type: Directory
+        - name: dummy-alluxio-alluxio-conf
+          configMap:
+            name: dummy-alluxio-alluxio-conf    
+    - name: dummySecretFuse1-volume
+      secret:
+        secretName: dummySecretFuse1
+        defaultMode: 256
+    - name: dummySecretFuse2-volume
+      secret:
+        secretName: dummySecretFuse2
+        defaultMode: 256    
+    - name: dummyConfigMapFuse1-volume
+      configMap:
+        name: dummyConfigMapFuse1
+    - name: dummyConfigMapFuse2-volume
+      configMap:
+        name: dummyConfigMapFuse2    
+    - name: dummyPvcFuse1-volume
+      persistentVolumeClaim:
+        claimName: dummyPvcFuse1
+    - name: dummyPvcFuse2-volume
+      persistentVolumeClaim:
+        claimName: dummyPvcFuse2
+---
+# Source: alluxio/templates/csi/csi-fuse.yaml
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#

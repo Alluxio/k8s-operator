@@ -27,9 +27,10 @@ import (
 	"google.golang.org/grpc/status"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/kubernetes/scheme"
-	"k8s.io/mount-utils"
+	"k8s.io/utils/mount"
 )
 
 type nodeServer struct {
@@ -99,7 +100,7 @@ func (ns *nodeServer) NodeUnpublishVolume(ctx context.Context, req *csi.NodeUnpu
 func (ns *nodeServer) NodeStageVolume(ctx context.Context, req *csi.NodeStageVolumeRequest) (*csi.NodeStageVolumeResponse, error) {
 	ns.mutex.Lock()
 	defer ns.mutex.Unlock()
-	fusePod, err := getAndCompleteFusePodObj(ns.nodeId, req)
+	fusePod, err := getAndCompleteFusePodObj(ns, req)
 	if err != nil {
 		glog.V(3).Infof("Error getting or completing the CSI Fuse pod object. %+v", err)
 		return nil, status.Error(codes.Internal, err.Error())
@@ -115,17 +116,23 @@ func (ns *nodeServer) NodeStageVolume(ctx context.Context, req *csi.NodeStageVol
 	return &csi.NodeStageVolumeResponse{}, nil
 }
 
-func getAndCompleteFusePodObj(nodeId string, req *csi.NodeStageVolumeRequest) (*v1.Pod, error) {
-	csiFusePodObj, err := getFusePodObj()
+func getAndCompleteFusePodObj(ns *nodeServer, req *csi.NodeStageVolumeRequest) (*v1.Pod, error) {
+	alluxioNamespacedName := types.NamespacedName{
+		Namespace: req.GetVolumeContext()["alluxioClusterNamespace"],
+		Name:      req.GetVolumeContext()["alluxioClusterName"],
+	}
+	csiFusePodObj, err := getFusePodObj(ns, alluxioNamespacedName)
 	if err != nil {
 		return nil, errors.Wrap(err, "Error getting Fuse pod object from template.")
 	}
-	// Append nodeId and partial volumeId to pod name for uniqueness
-	VolumeIdParts := strings.Split(req.GetVolumeId(), "-")
-	csiFusePodObj.Name = strings.Join([]string{csiFusePodObj.Name, nodeId, VolumeIdParts[len(VolumeIdParts)-1]}, "-")
+
+	// Append extra information to pod name for uniqueness but not exceed maximum
+	csiFusePodObj.Name = getFusePodName(alluxioNamespacedName.Name, ns.nodeId, req.GetVolumeId())[:64]
+
+	csiFusePodObj.Namespace = alluxioNamespacedName.Namespace
 
 	// Set node name for scheduling
-	csiFusePodObj.Spec.NodeName = nodeId
+	csiFusePodObj.Spec.NodeName = ns.nodeId
 
 	// Set fuse mount point
 	csiFusePodObj.Spec.Containers[0].Args[2] = req.GetStagingTargetPath()
@@ -143,11 +150,7 @@ func getAndCompleteFusePodObj(nodeId string, req *csi.NodeStageVolumeRequest) (*
 }
 
 func (ns *nodeServer) createFusePodIfNotExist(fusePod *v1.Pod) error {
-	namespace, err := getNamespace()
-	if err != nil {
-		return errors.Wrap(err, "Error getting namespace.")
-	}
-	if _, err := ns.client.CoreV1().Pods(namespace).Create(fusePod); err != nil {
+	if _, err := ns.client.CoreV1().Pods(fusePod.Namespace).Create(fusePod); err != nil {
 		if strings.Contains(err.Error(), "already exists") {
 			glog.V(4).Infof("Fuse pod %s already exists. Skip creating pod.", fusePod.Name)
 		} else {
@@ -167,16 +170,22 @@ func checkIfMountPointReady(mountPoint string) error {
 }
 
 func (ns *nodeServer) NodeUnstageVolume(ctx context.Context, req *csi.NodeUnstageVolumeRequest) (*csi.NodeUnstageVolumeResponse, error) {
-	csiFusePodObj, err := getFusePodObj()
+	pv, err := ns.client.CoreV1().PersistentVolumes().Get(req.VolumeId, metav1.GetOptions{})
 	if err != nil {
-		return nil, errors.Wrap(err, "Error getting Fuse pod object from template.")
+		glog.V(3).Infof("Error getting PV with volume ID %v. %+v", req.VolumeId, err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	namespace, err := getNamespace()
+	storageClass, err := ns.client.StorageV1().StorageClasses().Get(pv.Spec.StorageClassName, metav1.GetOptions{})
 	if err != nil {
-		return nil, errors.Wrap(err, "Error getting namespace.")
+		glog.V(3).Infof("Error getting StorageClass %v associated with the PV with volume ID %v. %+v", pv.Spec.StorageClassName, req.VolumeId, err)
+		return nil, status.Error(codes.Internal, err.Error())
 	}
-	podName := strings.Join([]string{csiFusePodObj.Name, ns.nodeId, req.GetVolumeId()}, "-")
-	if err := ns.client.CoreV1().Pods(namespace).Delete(podName, &metav1.DeleteOptions{}); err != nil {
+	alluxioNamespacedName := types.NamespacedName{
+		Namespace: storageClass.Parameters["alluxioClusterNamespace"],
+		Name:      storageClass.Parameters["alluxioClusterName"],
+	}
+	podName := getFusePodName(alluxioNamespacedName.Name, ns.nodeId, req.GetVolumeId())
+	if err := ns.client.CoreV1().Pods(alluxioNamespacedName.Namespace).Delete(podName, &metav1.DeleteOptions{}); err != nil {
 		if strings.Contains(err.Error(), "not found") {
 			// Pod not found. Try to clean up the mount point.
 			command := exec.Command("umount", req.GetStagingTargetPath())
@@ -239,11 +248,13 @@ func ensureMountPoint(targetPath string) (bool, error) {
 	return notMnt, errors.Wrapf(err, "Failed to check if target path %v is a mount point.", targetPath)
 }
 
-func getFusePodObj() (*v1.Pod, error) {
-	csiFuseYaml, err := os.ReadFile("/opt/alluxio/conf/alluxio-csi-fuse.yaml")
+func getFusePodObj(ns *nodeServer, alluxioNamespacedName types.NamespacedName) (*v1.Pod, error) {
+	fuseConfigmapName := fmt.Sprintf("%v-csi-fuse-config", alluxioNamespacedName.Name)
+	fuseConfigmap, err := ns.client.CoreV1().ConfigMaps(alluxioNamespacedName.Namespace).Get(fuseConfigmapName, metav1.GetOptions{})
 	if err != nil {
-		return nil, errors.Wrap(err, "Error getting CSI Fuse yaml file.")
+		return nil, errors.Wrapf(err, "Failed to find the configmap containing fuse pod object.")
 	}
+	csiFuseYaml := []byte(fuseConfigmap.Data["alluxio-csi-fuse.yaml"])
 	csiFuseObj, grpVerKind, err := scheme.Codecs.UniversalDeserializer().Decode(csiFuseYaml, nil, nil)
 	if err != nil {
 		return nil, errors.Wrapf(err, "Error decoding CSI Fuse yaml file to object.")
@@ -255,10 +266,7 @@ func getFusePodObj() (*v1.Pod, error) {
 	return csiFuseObj.(*v1.Pod), nil
 }
 
-func getNamespace() (string, error) {
-	namespace, err := os.ReadFile("/var/run/secrets/kubernetes.io/serviceaccount/namespace")
-	if err != nil {
-		return "", errors.Wrap(err, "Error getting namespace")
-	}
-	return string(namespace), nil
+func getFusePodName(clusterName, nodeId, volumeId string) string {
+	volumeIdParts := strings.Split(volumeId, "-")
+	return strings.Join([]string{clusterName, nodeId, volumeIdParts[len(volumeIdParts)-1]}, "-")
 }
