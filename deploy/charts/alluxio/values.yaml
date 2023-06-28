@@ -120,6 +120,8 @@ master:
   hostPathForLogs: /mnt/alluxio/logs/master
   # Number of master deployed. For high-availability mode set this to an odd number > 1
   count: 1
+  # Site properties solely for Alluxio master
+  properties:
   # Extra environment variables for Alluxio master pods. Format:
   # env:
   #   <key1>: <value1>
@@ -190,6 +192,8 @@ worker:
   # Whether to limit at most one Alluxio worker per k8s node.
   # Set to true if each k8s node has only one directory for Alluxio worker storage.
   limitOneWorkerPerNode: true
+  # Site properties solely for Alluxio workers
+  properties:
   # Extra environment variables for the Alluxio worker pods. Format:
   # env:
   #   <key1>: <value1>
@@ -264,6 +268,8 @@ proxy:
   enabled: false
   # The path on the host machine for storing proxy log
   hostPathForLogs: /mnt/alluxio/logs/proxy
+  # Site properties solely for Alluxio proxy
+  properties:
   # Extra environment variables for the Alluxio proxy pods. Format:
   # env:
   #   <key1>: <value1>
@@ -297,6 +303,8 @@ fuse:
   enabled: false
   # The path on the host machine for storing fuse log
   hostPathForLogs: /mnt/alluxio/logs/fuse
+  # Site properties solely for Alluxio Fuse
+  properties:
   # Extra environment variables for the Alluxio fuse pods. Format:
   # env:
   #   <key1>: <value1>
