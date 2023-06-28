@@ -120,8 +120,10 @@ spec:
           - {{ $alluxioWorkerPagestorePath }}
           {{- end }}
         volumeMounts:
+          {{- if .Values.hostPathForLogging }}
           - name: {{ $alluxioWorkerLogVolumeName }}
             mountPath: {{ $alluxioWorkerLogDir }}
+          {{- end }}
           {{- if eq .Values.pagestore.type "hostPath" }}
           - name: {{ $pagestoreVolumeName }}
             mountPath: {{ $alluxioWorkerPagestorePath }}
