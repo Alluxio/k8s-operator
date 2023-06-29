@@ -15,6 +15,9 @@ See the NOTICE file distributed with this work for information regarding copyrig
 {{- define "alluxio.master.env" -}}
 {{- $masterJavaOpts := list }}
 {{- $masterJavaOpts = print "-Dalluxio.master.hostname=${ALLUXIO_MASTER_HOSTNAME}" | append $masterJavaOpts }}
+{{- range $key, $val := .Values.master.properties }}
+  {{- $masterJavaOpts = printf "-D%v=%v" $key $val | append $masterJavaOpts }}
+{{- end }}
 {{- if .Values.master.jvmOptions }}
   {{- $masterJavaOpts = concat $masterJavaOpts .Values.master.jvmOptions }}
 {{- end }}
@@ -27,6 +30,9 @@ See the NOTICE file distributed with this work for information regarding copyrig
 {{- define "alluxio.worker.env" -}}
 {{- $workerJavaOpts := list }}
 {{- $workerJavaOpts = print "-Dalluxio.worker.hostname=${ALLUXIO_WORKER_HOSTNAME}" | append $workerJavaOpts }}
+{{- range $key, $val := .Values.worker.properties }}
+  {{- $workerJavaOpts = printf "-D%v=%v" $key $val | append $workerJavaOpts }}
+{{- end }}
 {{- if .Values.worker.jvmOptions }}
   {{- $workerJavaOpts = concat $workerJavaOpts .Values.worker.jvmOptions }}
 {{- end }}
@@ -40,6 +46,9 @@ See the NOTICE file distributed with this work for information regarding copyrig
 {{- $proxyJavaOpts := list }}
 {{- if .Values.proxy.enabled }}
   {{- $proxyJavaOpts = print "-Dalluxio.user.hostname=${ALLUXIO_CLIENT_HOSTNAME}" | append $proxyJavaOpts }}
+  {{- range $key, $val := .Values.proxy.properties }}
+    {{- $proxyJavaOpts = printf "-D%v=%v" $key $val | append $proxyJavaOpts }}
+  {{- end }}
   {{- if .Values.proxy.jvmOptions }}
     {{- $proxyJavaOpts = concat $proxyJavaOpts .Values.proxy.jvmOptions }}
   {{- end }}
@@ -54,6 +63,9 @@ See the NOTICE file distributed with this work for information regarding copyrig
 {{- $fuseJavaOpts := list }}
 {{- if .Values.fuse.enabled }}
   {{- $fuseJavaOpts = print "-Dalluxio.user.hostname=${ALLUXIO_CLIENT_HOSTNAME}" | append $fuseJavaOpts }}
+  {{- range $key, $val := .Values.fuse.properties }}
+    {{- $fuseJavaOpts = printf "-D%v=%v" $key $val | append $fuseJavaOpts }}
+  {{- end }}
   {{- if .Values.fuse.jvmOptions }}
     {{- $fuseJavaOpts = concat $fuseJavaOpts .Values.fuse.jvmOptions }}
   {{- end }}
