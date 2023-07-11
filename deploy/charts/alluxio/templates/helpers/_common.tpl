@@ -130,7 +130,3 @@ resources:
 {{- define "alluxio.getPvcName" -}}
 {{ printf "%v-%v-pvc" .prefix .component }}
 {{- end -}}
-
-{{- define "alluxio.csi.serviceAccountName" -}}
-alluxio-csi-sa
-{{- end -}}

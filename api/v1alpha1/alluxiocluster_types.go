@@ -47,7 +47,6 @@ type AlluxioClusterSpec struct {
 	Metastore          MetastoreSpec     `json:"metastore,omitempty" yaml:"metastore,omitempty"`
 	Proxy              ProxySpec         `json:"proxy,omitempty" yaml:"proxy,omitempty"`
 	Fuse               FuseSpec          `json:"fuse,omitempty" yaml:"fuse,omitempty"`
-	Csi                CsiSpec           `json:"csi,omitempty" yaml:"csi,omitempty"`
 	Metrics            MetricsSpec       `json:"metrics,omitempty" yaml:"metrics,omitempty"`
 }
 
@@ -146,14 +145,6 @@ type FuseSpec struct {
 	PodAnnotations map[string]string `json:"podAnnotations,omitempty" yaml:"podAnnotations,omitempty"`
 	Resources      ResourcesSpec     `json:"resources,omitempty" yaml:"resources,omitempty"`
 	Tolerations    []Toleration      `json:"tolerations,omitempty" yaml:"tolerations,omitempty"`
-}
-
-type CsiSpec struct {
-	ControllerPlugin   ControllerPluginSpec `json:"controllerPlugin,omitempty" yaml:"controllerPlugin,omitempty"`
-	CreateStorageClass bool                 `json:"createStorageClass,omitempty" yaml:"createStorageClass,omitempty"`
-	Enabled            bool                 `json:"enabled,omitempty" yaml:"enabled,omitempty"`
-	ImagePullPolicy    string               `json:"imagePullPolicy,omitempty" yaml:"imagePullPolicy,omitempty"`
-	NodePlugin         NodePluginSpec       `json:"nodePlugin,omitempty" yaml:"nodePlugin,omitempty"`
 }
 
 type ControllerPluginSpec struct {

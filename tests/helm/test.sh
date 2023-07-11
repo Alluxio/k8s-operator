@@ -100,32 +100,18 @@ function verifyConfTemplate {
 
 function verifyCsiTemplate {
   mkdir -p "${TARGET_DIR}"/csi
-  local controller_relative_path="csi/controller.yaml"
-  helm template --name-template dummy "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${controller_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${controller_relative_path}"
-  cmp --silent "${TARGET_DIR}/${controller_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${controller_relative_path}"
+  local fuse_configmap_relative_path="csi/csi-fuse.yaml"
+  helm template --name-template dummy "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${fuse_configmap_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${fuse_configmap_relative_path}"
+  cmp --silent "${TARGET_DIR}/${fuse_configmap_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${fuse_configmap_relative_path}"
   if [[ $? -ne 0 ]]; then
-    echo "Alluxio csi controller template is not rendered as expected."
+    echo "Alluxio csi Fuse configmap template is not rendered as expected."
     return 1
   fi
-  local rbac_relative_path="csi/rbac.yaml"
-  helm template --name-template dummy "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${controller_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${controller_relative_path}"
-  cmp --silent "${TARGET_DIR}/${controller_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${controller_relative_path}"
+  local pvc_relative_path="csi/pvc.yaml"
+  helm template --name-template dummy "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${pvc_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${pvc_relative_path}"
+  cmp --silent "${TARGET_DIR}/${pvc_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${pvc_relative_path}"
   if [[ $? -ne 0 ]]; then
-    echo "Alluxio csi rbac template is not rendered as expected."
-    return 1
-  fi
-  local driver_relative_path="csi/driver.yaml"
-  helm template --name-template dummy "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${driver_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${driver_relative_path}"
-  cmp --silent "${TARGET_DIR}/${driver_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${driver_relative_path}"
-  if [[ $? -ne 0 ]]; then
-    echo "Alluxio csi driver template is not rendered as expected."
-    return 1
-  fi
-  local nodeplugin_relative_path="csi/nodeplugin.yaml"
-  helm template --name-template dummy "${SCRIPT_DIR}"/../../deploy/charts/alluxio --show-only templates/"${nodeplugin_relative_path}" -f "${SCRIPT_DIR}"/config_test.yaml --debug > "${TARGET_DIR}/${nodeplugin_relative_path}"
-  cmp --silent "${TARGET_DIR}/${nodeplugin_relative_path}" "${EXPECTED_TEMPLATES_DIR}/${nodeplugin_relative_path}"
-  if [[ $? -ne 0 ]]; then
-    echo "Alluxio csi nodeplugin template is not rendered as expected."
+    echo "Alluxio csi pvc template is not rendered as expected."
     return 1
   fi
   local storageClass_relative_path="csi/storageClass.yaml"

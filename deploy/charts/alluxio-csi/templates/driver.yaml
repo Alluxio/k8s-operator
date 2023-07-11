@@ -9,7 +9,6 @@
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
 
-{{ if .Values.csi.enabled -}}
 apiVersion: {{ ternary "storage.k8s.io/v1" "storage.k8s.io/v1beta1" (semverCompare ">=1.18.0-0" .Capabilities.KubeVersion.Version) }}
 kind: CSIDriver
 metadata:
@@ -18,4 +17,3 @@ spec:
   # used by CSI developer
   attachRequired: false
   podInfoOnMount: true
-{{- end }}

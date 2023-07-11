@@ -17,3 +17,7 @@ home: https://www.alluxio.io/
 maintainers:
 - name: Shawn Sun
   email: shawn.sun@alluxio.com
+dependencies:
+- name: alluxio-csi
+  version: 1.0.0
+  repository: "file://../alluxio-csi"

@@ -14,17 +14,19 @@ package main
 import (
 	"flag"
 	"fmt"
-	"google.golang.org/grpc/codes"
-	"google.golang.org/grpc/status"
-	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/clientcmd"
 	"os"
 	"os/signal"
 	"syscall"
 
-	"github.com/alluxio/csi/alluxio"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
+	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/tools/clientcmd"
+
 	"github.com/golang/glog"
 	"github.com/spf13/cobra"
+
+	"github.com/alluxio/csi/alluxio"
 )
 
 var (

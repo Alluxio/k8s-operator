@@ -1,0 +1,58 @@
+#
+# The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
+# (the "License"). You may not use this work except in compliance with the License, which is
+# available at www.apache.org/licenses/LICENSE-2.0
+#
+# This software is distributed on an "AS IS" basis, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND,
+# either express or implied, as more fully set forth in the License.
+#
+# See the NOTICE file distributed with this work for information regarding copyright ownership.
+#
+
+# The following value should not be modified in the usual case.
+nameOverride: alluxio
+
+image: alluxio/csi
+imageTag: latest
+imagePullPolicy: IfNotPresent
+imagePullSecrets:
+
+hostNetwork: false
+dnsPolicy:
+
+controllerPlugin:
+  provisioner:
+    image: registry.k8s.io/sig-storage/csi-provisioner:v2.0.5
+    resources:
+      limits:
+        cpu: 100m
+        memory: 300Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi
+  controller:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 200Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi
+nodePlugin:
+  nodeserver:
+    resources:
+      limits:
+        cpu: 200m
+        memory: 200Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi
+  driverRegistrar:
+    image: registry.k8s.io/sig-storage/csi-node-driver-registrar:v2.0.0
+    resources:
+      limits:
+        cpu: 100m
+        memory: 100Mi
+      requests:
+        cpu: 10m
+        memory: 20Mi

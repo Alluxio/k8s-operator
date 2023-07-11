@@ -1,5 +1,3 @@
----
-# Source: alluxio/templates/csi/controller-rbac.yaml
 #
 # The Alluxio Open Foundation licenses this work under the Apache License, version 2.0
 # (the "License"). You may not use this work except in compliance with the License, which is
@@ -11,6 +9,15 @@
 # See the NOTICE file distributed with this work for information regarding copyright ownership.
 #
 
+
+---
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+  name: {{ include "alluxio.csi.serviceAccountName" . }}
+  namespace: alluxio-operator
+---
+
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
@@ -19,6 +26,9 @@ rules:
   - apiGroups: [""]
     resources: ["persistentvolumes"]
     verbs: ["get", "list", "watch", "create", "delete"]
+  - apiGroups: [""]
+    resources: ["configmaps"]
+    verbs: ["get", "list", "watch", "create"]
   - apiGroups: [""]
     resources: ["persistentvolumeclaims"]
     verbs: ["get", "list", "watch", "update"]
@@ -38,15 +48,15 @@ rules:
     resources: ["pods"]
     verbs: ["get", "list", "watch", "create", "delete"]
 ---
-# Source: alluxio/templates/csi/controller-rbac.yaml
+
 kind: ClusterRoleBinding
 apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: alluxio-csi-provisioner-binding
 subjects:
   - kind: ServiceAccount
-    name: csi-controller-sa
-    namespace: default
+    name: {{ include "alluxio.csi.serviceAccountName" . }}
+    namespace: alluxio-operator
 roleRef:
   kind: ClusterRole
   name: alluxio-external-provisioner-role
